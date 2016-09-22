@@ -1,0 +1,412 @@
+\documentclass[utf8,xcolor=table]{beamer}
+
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+%\usepackage{tikz-uml}
+\usepackage{minted}
+
+\mode<presentation>{
+	\usetheme{CambridgeUS}
+}
+
+\renewcommand{\t}[1]{\ifmmode{\mathtt{#1}}\else{\texttt{#1}}\fi}
+
+\title{Матрицы, numpy и классы}
+\author{Егор Суворов}
+\institute[СПб АУ]{Курс <<Парадигмы и языки программирования>>, подгруппа 3}
+\date[21.09.2016]{Среда, 21 сентября 2016 года}
+
+\setlength{\arrayrulewidth}{1pt}
+
+\input{../private/contacts}
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}[t]{Организационное}
+	\begin{itemize}
+	\item Я студент третьего курса бакалавриата СПб АУ (программист).
+	\item Имена: <<извините, пожалуйста>>, <<Егор>>, <<Егор Фёдорович>>.
+	\item
+		\begin{tabular}{rl}
+			E-mail: & \href{mailto:\EgorEmail?subject=[parad]}{\t{\EgorEmail}} \\
+			Тема e-mail: & \t{[parad]...} \\
+			ВК: & \href{https://vk.com/\EgorVk}{\t{\EgorVk}} \\
+			Telegram: & \href{https://telegram.me/\EgorTelegram}{\t{\EgorTelegram}}
+		\end{tabular}
+	\item
+		Домашние задания общие с остальными подгруппами.
+	\item
+		Решения надо присылать мне.
+		Если уже прислали кому-то ещё "--- перенаправлять не надо.
+	\item
+		Вопросы по текущей теме или смежным можно задавать в ходе рассказа на занятии.
+	\item
+		Вопросы по остальным темам и предметам лучше в оффлайне.
+	\item
+		А хотите Office Hours с 10 до 11?
+	\item
+		Слайды "--- на SEWiki.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[t]{Зачёт и проверка}
+	\begin{itemize}
+		\item Надо набрать хотя бы половину баллов от максимума.
+		\item Надо набрать строго положительные баллы по каждой теме.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[t]{Кто такие матрицы}
+	\framebox[\linewidth]{
+		\textit{Матрица} "--- это квадратная\footnote{\only<2->{прямоугольная}} табличка\footnote{\only<3->{алгебраический объект}} с чиселками\footnote{\onslide<4->{необязательно числа}}.
+	}
+
+	\only<5->{
+		Полезны при изучении:
+		\begin{itemize}
+			\item Почти чего угодно со словом <<линейное>>:
+				\begin{itemize}
+					\item Систем линейных уравнений.
+					\item Линейных преобразований (плоскости, пространства...).
+					\item Линейных рекуррент ($F_n=F_{n-1}+F_{n-2}$).
+				\end{itemize}
+			\item Графов (матрица смежности/инцидентности).
+			\item Машинного обучения (привет от линейной алгебры).
+		\end{itemize}
+	}
+\end{frame}
+
+\begin{frame}[t]{Операции с матрицами}
+	Запись матрицы $A$ размера $2 \times 3$:
+	\begin{align*}
+		A &= \begin{pmatrix}
+			A_{1,1} & A_{1,2} & A_{1,3} \\
+			A_{2,1} & A_{2,2} & A_{2,3} \\
+		\end{pmatrix}
+	\end{align*}
+
+	Сложение матриц одного размера:
+	\[
+		\begin{pmatrix}
+			A_{1,1} & A_{1,2} \\
+			A_{2,1} & A_{2,2} \\
+			0 & A_{3,2} \\
+		\end{pmatrix}
+		+
+		\begin{pmatrix}
+			B_{1,1} & B_{1,2} \\
+			B_{2,1} & 0 \\
+			B_{3,1} & B_{3,2} \\
+		\end{pmatrix}
+		=
+		\begin{pmatrix}
+			A_{1,1}+B_{1,1} & A_{1,2}+B_{1,2} \\
+			A_{2,1}+B_{2,1} & A_{2,2} \\
+			B_{3,1} & A_{3,2}+B_{3,2} \\
+		\end{pmatrix}
+	\]
+
+	Уможение\footnote{интуитивно можно думать <<композиция отображений>>} матрицы с $k$ столбцами на матрицу с $k$ строками:
+	\[
+		\begin{pmatrix}
+			A_{1,1} & A_{1,2} & A_{1,3} \\
+			A_{2,1} & A_{2,2} & A_{2,3} \\
+		\end{pmatrix}
+		\cdot
+		\begin{pmatrix}
+			B_{1,1} \\
+			B_{2,1} \\
+			B_{3,1} \\
+		\end{pmatrix}
+		=
+		\begin{pmatrix}
+			A_{1,1} \cdot B_{1,1} + A_{1,2} \cdot B_{2,1} + A_{1,3} \cdot B_{3,1} \\
+			A_{2,1} \cdot B_{1,1} + A_{2,2} \cdot B_{2,1} + A_{2,3} \cdot B_{3,1} \\
+		\end{pmatrix}
+	\]
+\end{frame}
+
+\begin{frame}[t]{Ага}
+	\begin{center}
+		\includegraphics[width=0.5\linewidth]{multiplication-meme.jpg}
+	\end{center}
+\end{frame}
+
+\begin{frame}[t]{Wait But Why}
+	Например, если матрица описывает преобразование координат:
+	\begin{align*}
+		\begin{pmatrix} x_2 \\ y_2 \end{pmatrix} &=
+			\begin{pmatrix}ax_1 + by_1 \\ cx_1 + dy_1\end{pmatrix} =
+			\underbrace{\begin{pmatrix}a & b \\ c & d\end{pmatrix}}_{A} \cdot \begin{pmatrix}x_1 \\ y_1\end{pmatrix} \\
+		\begin{pmatrix} x_3 \\ y_3 \end{pmatrix} &=
+			\begin{pmatrix}a'x_2 + b'y_2 \\ c'x_2 + dy_2\end{pmatrix} =
+			\underbrace{\begin{pmatrix}a' & b' \\ c' & d'\end{pmatrix}}_{A'} \cdot \begin{pmatrix}x_2 \\ y_2\end{pmatrix}
+			\only<1>{\phantom{=A' \cdot \begin{pmatrix}x_2 \\ y_2\end{pmatrix} = A' \cdot \left(A \cdot \begin{pmatrix} x_1 \\ y_1\end{pmatrix}\right)}}
+			\only<2->{=A' \cdot \begin{pmatrix}x_2 \\ y_2\end{pmatrix} = A' \cdot \left(A \cdot \begin{pmatrix} x_1 \\ y_1\end{pmatrix}\right)}
+			\\
+		\begin{pmatrix} x_3 \\ y_3 \end{pmatrix} &=
+			\begin{pmatrix}a'(ax_1+by_1) + b'(cx_1+dy_1) \\ c'(ax_1+by_1) + d'(cx_1+dy_1)\end{pmatrix} = \\
+		&=	\begin{pmatrix}(a'a+b'c)x_1+(a'b+b'd)y_1 \\ (c'a+d'c)x_1+(c'b+d'd)y_1 \end{pmatrix} =
+			(A'\cdot A)\cdot\begin{pmatrix}x_1 \\ y_1\end{pmatrix}
+	\end{align*}
+\end{frame}
+
+\begin{frame}[t,fragile]{Умножение матриц-1}
+\begin{minted}{python}
+a=[[1,2,3],
+   [4,5,6]]
+b=[[5,4],
+   [3,2],
+   [1,0]]
+c=[[0, 0], [0,0]]
+for i in range(2):
+  for j in range(2):
+    c[i][j] = sum(a[i][k] * b[k][j] for k in range(3))
+print(c)  # [[14, 8],
+          #  [41, 26]]
+\end{minted}
+	Получаем $O(n \cdot m \cdot k)$.
+	Если матрицы квадратные "--- куб.
+
+	Python медленный, так что у меня работает 0.65 секунд на матрицах $150 \times 150$.
+\end{frame}
+
+\begin{frame}[t]{Умножение матриц-2}
+	1987 год "--- алгоритм Копперсмита-Винограда, $O(n^{2,375477})$.
+
+	2010--2014 года "--- серия улучшений, аж до $O(n^{2,3728639})$.
+
+	Практика "--- алгоритм Штрассена, $O(n^{2,807355})$.
+	Вам надо будет его реализовать.
+\end{frame}
+
+\begin{frame}[t]{Алгоритм Штрассена}
+	Разделяй-и-властвуй (как алгоритм Карацубы):
+	\begin{enumerate}
+		\item
+			Разделили каждую матрицу на четыре одинаковых.
+		\item
+			???
+		\item
+			Profit
+	\end{enumerate}
+
+	Цель "--- чтобы на втором шаге потребовалось строго меньше восьми умножений матриц:
+	\begin{gather*}
+		\begin{pmatrix} A_{1,1} & A_{1,2} \\ A_{2,1} & A_{2,2} \end{pmatrix}
+		\cdot
+		\begin{pmatrix} B_{1,1} & B_{1,2} \\ B_{2,1} & B_{2,2} \end{pmatrix}
+		= \\
+		=
+		\begin{pmatrix}
+			A_{1,1}\cdot B_{1,1}+A_{1,2}\cdot B_{2,1} & A_{1,1} \cdot B_{1,2} + A_{1,2} \cdot B_{2,2} \\
+			A_{2,1}\cdot B_{1,1}+A_{2,2}\cdot B_{2,1} & A_{2,1} \cdot B_{1,2} + A_{2,2} \cdot B_{2,2} \\
+		\end{pmatrix}
+	\end{gather*}
+	Волшебные формулы смотрим в Википедии.
+\end{frame}
+
+\begin{frame}[t,fragile]{Велосипед уже изобретён}
+	NumPy "--- библиотека для работы с многомерными массивами, в том числе с матрицами.
+	\begin{itemize}
+		\item Написано на C, незаметно <<встраивается>> в Python.
+		\item Может даже использовать GPU, если хочет.
+		\item Массивы гарантированно хранятся более эффективно.
+		\item Ускоряются только встроенные в библиотеку операции (не циклы).
+	\end{itemize}
+\begin{minted}{python}
+import numpy as np
+a = np.array([[1,2,3],[4,5,6]])
+b = np.array([[7,8,9],[10,11,12]])
+print(a.shape)
+print(a+b)
+b[1][1] += 100
+print(a.dot(b.transpose()))
+print(b[:, 1:])
+print(b[np.array([0, 0])])
+\end{minted}
+\end{frame}
+
+\begin{frame}[t,fragile]{Форма и копии}
+	\begin{itemize}
+		\item
+			Можно считать, что все элементы массива расположены в памяти в лексикографическом порядке друг за другом.
+		\item
+			Форма массива "--- это лишь числа, которые легко меняются:
+			\begin{minted}{python}
+print(np.arange(24))
+print(np.arange(24).reshape(3, 8))
+print(np.arange(24).reshape(3, 8).reshape(2, 3, 4))
+			\end{minted}
+		\item
+			Все операции по умолчанию поэлементные (сложение, \t{np.exp}...).
+		\item
+			Конструкция \t{a = b} ничего не копирует (только ссылку).
+		\item
+			Можно получить отдельный объект на том же массиве (view): \t{b~=~a.view()}, \t{b~=~a[...]} (\t{...} "--- это именно многоточие).
+		\item
+			Можно скопировать целиком (долго): \t{b = a.copy()}.
+		\item
+			Можно конкатенировать массивы: \t{vstack}, \t{hstack}.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[t,fragile]{Распространение поэлементных операций}
+\begin{minted}{python}
+import numpy as np
+a = np.arange(10).reshape(2, 5)
+print(a * 100)
+print(a + [5, 4, 3, 2, 1])  
+print(a + [[100], [1000]])
+print(a.reshape(1, 10) * a.reshape(10, 1))
+\end{minted}
+	\begin{itemize}
+		\item К размерности дописываются единицы: $(3) \to (1, 3) \to (1, 1, 3) \to \dots$
+		\item Если какая-то размерность равна единице, то её можно расширить до максимума: $(1, 10) \to (10, 10)$.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[t,fragile]{Матрицы}
+	Матрица "--- это двухмерный массив.
+\begin{minted}{python}
+import numpy as np
+a = np.arange(4).reshape(2, 2)
+print(a * a)  # wtf
+\end{minted}
+
+	\only<2->{
+	Потому что все операции поэлементные. Используйте \t{a.dot(a)} или \t{np.dot(a, a)}.
+
+	Альтернативно можно использовать \t{np.matrix} вместо \t{np.array}, но это не рекомендуется:
+	\begin{itemize}
+		\item Если использовать оба, то будет путаница в операциях (типизация-то динамическая).
+		\item Некоторые функции сторонних библиотек могут вернуть \t{array}, даже если получили на вход \t{matrix}.
+		\item Поэлементные операции не работают (хотя умножать на число можно).
+		\item \t{*} и \t{/} ведут себя по-разному.
+	\end{itemize}
+	}
+\end{frame}
+
+\begin{frame}[t,fragile]{Задание в классе №1(а)}
+	Обязательное:
+	\begin{enumerate}
+		\item Установите NumPy (в составе набора SciPy): \href{http://www.scipy.org/install.html}{scipy.org/install.html}.
+			\begin{itemize}
+				\item Для Ubuntu всё лежит в репозиториях.
+				\item Для Mac надо поставить специальную сборку Python, в которую всё включено.
+				\item Для Windows надо сделать один из пунктов (на выбор):
+					\begin{itemize}
+						\item Выполнить в консоли (запускать <<от имени администратора>>):
+							\t{pip~install~numpy}. Скачает десяток мегабайт и всё поставит.
+						\item Поставить специальную сборку Python вроде WinPython (см. ссылку).
+					\end{itemize}
+			\end{itemize}
+		\item Откройте руководство: \href{http://docs.scipy.org/doc/numpy-dev/user/quickstart.html}{docs.scipy.org/doc/numpy-dev/user/quickstart.html}.
+		\item Перемножьте две матрицы при помощи NumPy и покажите код.
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}[t,fragile]{Задание в классе №1(б)}
+	Дополнительное:
+	\begin{enumerate}
+		\setcounter{enumi}{3}
+		\item Перемножьте две такие же матрицы при помощи циклов \t{for} без NumPy.
+		\item Уменьшите количество циклов \t{for} до двух.
+		\item Замерьте время работы двух функций при разных $n$ при помощи модуля \t{timeit}: \t{print(timeit.Timer(some\_func).timeit(1))}.
+		\item Поделитесь разницей в скорости с друзьями.
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}[t,fragile]{Набираем классы}
+Если логическая сущность состоит из нескольких кусочков данных, они все лежат в одном объекте:
+\begin{minted}{python}
+class BinaryExpression:
+    def __init__(self, left, op, right):
+        self.left = left
+        self.op = op
+        self.right = right
+
+    def validate(self):
+        self.left.validate()
+        assert self.op == '+'
+        self.right.validate()
+
+expr = BinaryExpression(None, '+', None)
+expr.validate()  # fails
+\end{minted}
+\end{frame}
+
+\begin{frame}[t,fragile]{Классы по-змеиному}
+	\begin{itemize}
+		\item Первый параметр у методов объекта (передаётся неявно, в отличие от Java/C++) "--- это объект, над которым совершается операция.
+		\item Обычно первый параметр называют \t{self}
+		\item \t{\_\_init\_\_} "--- конструктор.
+        \item Можно переопределить метод \t{\_\_str\_\_}, чтобы работал \t{print(expr)}.
+        \item Также бывает \t{\_\_cmp\_\_}, \t{\_\_eq\_\_} и другие <<magic methods>>
+        \item Всё публичное; приватное принято просто не вызывать. Можно начать метод с \t{\_}, чтобы подчеркнуть приватность.
+        \item Типизация утиная, никакого строгого <<интерфейса>> не задать.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[t,fragile]{Стандартные проблемы}
+\begin{minted}{python}
+class Foo:
+    x=[]
+foo = Foo()
+bar = Foo()
+print(foo.x, bar.x)
+foo.x.append(1)
+print(foo.x, bar.x)
+\end{minted}
+
+	Как с аргументами по умолчанию в функциях:
+\begin{minted}{python}
+def foo(x=[]):
+    x.append(1)
+    print(x)
+foo()
+foo()
+\end{minted}
+
+	Поле \t{x} было одно на все экземпляры \t{Foo}.
+\end{frame}
+
+\begin{frame}[t]{Задание в классе №2}
+	Напишите несколько программ, которые читают со стандартного входа строчки по одной и после каждого чтения выводят текущую строчку, если:
+	\begin{enumerate}
+		\item Она имела чётный номер.
+		\item Она была длины 3.
+		\item Она представляла собой целое число.
+		\item Она имела чётный номер среди строк длины 3, являющихся целыми числами.
+	\end{enumerate}
+	Запрещается хранить предыдущие введённые строки.
+
+	После этого сохраните код в отдельный файл и выполните следующее задание.
+\end{frame}
+
+\begin{frame}[t]{Задание в классе №3}
+	\begin{itemize}
+		\setcounter{enumi}{4}
+		\item
+			Создайте и используйте класс <<\t{Printer}>> с методом \t{consume(str)}, который печатает строку \t{str}.
+		\item
+			Создайте и используйте класс <<\t{FilterLengthIs3}>> с конструктором \t{\_\_init\_\_(consumer)} и методом \t{consume(str)}.
+			При вызове \t{consumer(str)} на строке длины три должен быть вызван метод \t{consumer.consume(str)}.
+		\item
+			Создайте и используйте аналогичный класс <<\t{FilterIsNumber}>>.
+		\item
+			Создайте и используйте ангалогичный класс <<\t{DropOdd}>>.
+		\item
+			Зацените чёткое разделение ответственности между написанными классами по сравнению с кодом без классов.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[t]{Работаем и спрашиваем!}
+\end{frame}
+
+\end{document}
