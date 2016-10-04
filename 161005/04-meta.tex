@@ -1,0 +1,79 @@
+\section{Метаклассы}
+
+\begin{frame}
+	\tableofcontents[currentsection,currentsubsection]
+\end{frame}
+
+\begin{frame}[t,fragile]{Идея}
+\begin{minted}{python}
+class A:
+    pass
+a = A()
+print(type(a))  # <class '__main__.A'>
+print(type(A))  # type
+\end{minted}
+	\begin{itemize}
+		\item В Python всё динамическое, и почти всё в некотором смысле "--- объект (имеет методы и свойства, которые можно менять).
+		\item Так зачем разделять <<классы>> и <<объекты>> в языке, если они ничем по поведению не отличаются, только по использованию?
+		\only<2->{
+		\item Классы "--- это тоже объекты класса \t{type}.
+		\item \t{type} "--- это тоже класс. И тоже объект класса \only<2>{...}\only<3->{\t{type}. Этакая рекурсия.
+		\item Обычно метаклассы в программах писать и использовать не требуется.
+		}}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Замечание}
+	В других языках я ничего похожего не видел, кроме, пожалуй JavaScript (там свои тараканы).
+
+	Обычно есть чёткое разделение на <<класс>> (статическое описание структуры объектов) и <<объект>>.
+\end{frame}
+
+\begin{frame}[fragile]{Зачем}
+	Используется, когда хочется изменить стандартное поведение слова \t{class}:
+	\begin{itemize}
+		\item Автоматически сгенерировать новые методы.
+		\item Проверить, что в классе определены все нужные методы.
+		\item Зарегистрировать класс где-нибудь при создании (например, если мы хотим знать все классы, которые у нас есть).
+		\item Автоматически обернуть все методы в декоратор (для логов, для замеров времени).
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Применение}
+	Обычно метаклассы незаметны; авторы библиотеки просто говорят, как надо писать код:
+\begin{minted}{python}
+from django.db import models
+class Person(models.Model):
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=30)
+\end{minted}
+	За этими тремя строками скрывается:
+	\begin{itemize}
+		\item Автоматическая генерация таблицы в базе данных.
+		\item Создание страницы сайта для редактирования.
+		\item Создание конструктора с параметрами \t{first\_name} и \t{last\_name}.
+		\item Создание методов для загрузки и сохранения объектов в БД.
+		\item Создание методов для проверки корректности данных.
+		\item Создание методов \t{\_\_eq\_\_}, \t{\_\_str\_\_} и других.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Пример}
+\begin{minted}{python}
+class NamedTupleMeta(type):
+    # Тут используют метод __new__ вместо __init__.
+    def __new__(cls, name, bases, dct):  # cls, не self.
+        print(cls, name, bases, dct)
+        attrs = dct["attrs"]
+        def init(self, **kwargs):
+            for key in kwargs:
+                assert key in attrs, "Unknown key: " + key
+                setattr(self, key, kwargs[key])
+        dct["__init__"] = init
+        del dct["attrs"]
+        return super().__new__(cls, name, bases, dct)
+
+class Person(metaclass=NamedTupleMeta):
+    attrs = ["first_name", "last_name"]
+\end{minted}
+\end{frame}

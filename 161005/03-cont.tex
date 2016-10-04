@@ -1,0 +1,58 @@
+\section{Менеджеры контекста}
+
+\begin{frame}
+	\tableofcontents[currentsection,currentsubsection]
+\end{frame}
+
+\begin{frame}[fragile]{Кто такие}
+\begin{minted}{python}
+with open("file.txt", "r") as f:
+    f.read()
+# Почти то же самое, что:
+f = open("file.txt", "r")
+f.__enter__()
+f.read()
+f.__exit__()
+\end{minted}
+	Тут \t{f} "--- \href{https://docs.python.org/3/library/stdtypes.html\#typecontextmanager}{\textit{менеджер контекста}}, потому что он реализует методы \t{\_\_enter\_\_} и \t{\_\_exit\_\_}.
+	Жизненный цикл:
+	\begin{enumerate}
+		\item Создали менеджер, вызвался \t{\_\_init\_\_}.
+		\item Вошли в блок \t{with}, вызвался \t{\_\_enter\_\_}.
+		\item Вышли из блока (в том числе при помощи \t{return}), вызвался \t{\_\_exit\_\_}.
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}{Зачем}
+	Примеры:
+	\begin{itemize}
+		\item Файлы: открываем и закрываем.
+		\item Блокировки: их можно создавать, а дальше захватывать для эксклюзивного доступа (и потом отпускать).
+		\item Папка с временными файлами: создать, потом почистить.
+		\item Смена текущей папки на время работы функции.
+	\end{itemize}
+	Применение:
+	\begin{itemize}
+		\item Когда ваш объект использует какие-то ресурсы, которые надо закрывать: файлы, сетевые соединения.
+		\item Менеджер может предполагать, что он создаётся и сразу используется в блоке \t{with}.
+			Тогда разница между \t{\_\_init\_\_} и \t{\_\_enter\_\_} тонкая.
+			Пример: файл.
+		\item
+			Менеджер может предполагать, что за время жизни его могут использовать в разных блоках \t{with}.
+			Тогда надо различать \t{\_\_init\_\_} и \t{\_\_enter\_\_}.
+			Пример: блокировка.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Задание}
+	Напишите менеджер контекста для смены текущей папки (функция \t{os.chdir()}):
+\begin{minted}{python}
+class ChangeDir:
+    # ... ваш код здесь ...
+
+print(os.getcwd())      # /home/foo/bar
+with ChangeDir(".."):   # as можно опускать
+    print(os.getcwd())  # /home/foo
+print(os.getcwd())      # /home/foo/bar
+\end{minted}
+\end{frame}
