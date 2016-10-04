@@ -106,3 +106,20 @@ print(hash(Str("a" * 100000)))
 	Тормозит, потому что в Python \t{int} автоматически преобразуется в длинную арифметику,
 	а не переполняется.
 \end{frame}
+
+\begin{frame}[fragile]{Упражнение}
+	Реализуйте класс \t{Natural} для хранения натуральных чисел с поддержкой сложения, умножения (в том числе с int), хэширования, вывода на экран и сравнений:
+\begin{minted}{python}
+class Natural:
+    # ... ваш код здесь ...
+
+# Тесты:
+l = map(Natural, [5, 2, 3, 4, 1, 4])
+print(Natural(2) + Natural(3))
+print(20 * Natural(100) + 5)
+print(sum(l))
+print(sorted(l))
+d = {Natural(1): 10, Natural(2): 20}
+print(list(d.keys()))  # [Natural(1), Natural(2)]
+\end{minted}
+\end{frame}
