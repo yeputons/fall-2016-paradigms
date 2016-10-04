@@ -1,0 +1,61 @@
+\section{Притворяемся коллекцией}
+\subsection{Словарь}
+\begin{frame}
+	\tableofcontents[currentsection,currentsubsection]
+\end{frame}
+
+\begin{frame}[fragile]{Словарь}
+\begin{minted}{python}
+class KeyToPrependedKey:
+    def __init__(self, prefix):
+        self.prefix = prefix
+    def __getitem__(self, name):
+        return self.prefix + name
+a = KeyToPrependedKey("foo_")
+print(a["bar"])  # foo_bar
+\end{minted}
+	Ещё бывают методы \t{\_\_setitem\_\_}, \t{\_\_delitem\_\_}, \t{\_\_len\_\_}, \t{\_\_contains\_\_}, \t{\_\_reversed\_\_}, \t{\_\_missing\_\_}, \t{\_\_iter\_\_} (см. дальше).
+\end{frame}
+
+\begin{frame}[fragile]{Массив со срезами}
+	Срезы передаются просто как объект типа \t{slice}:
+\begin{minted}{python}
+class RangeMeasurer:
+    def __getitem__(self, s):
+        if isinstance(s, slice):
+            return s.stop - s.start
+        else:
+            return 1
+print(RangeMeasurer()[2:4])    # 2
+print(RangeMeasurer()[4:2])    # -2
+print(RangeMeasurer()[2:4:2])  # 2
+print(RangeMeasurer()[:2])     # ???
+print(RangeMeasurer()[2:])     # ???
+\end{minted}
+	\pause
+	Все случаи надо либо разбирать руками, либо использовать функцию \t{slice.range()}.
+\end{frame}
+
+\begin{frame}[fragile]{Присваивание}
+	Оператор \t{=} в Python в общем случае перегрузить нельзя: \t{a = b}
+	всегда изменит значение \t{a} на \t{b} копированием ссылки.
+	Но можно перегрузить в частных случаях:
+\begin{minted}{python}
+class KeyPrepender:
+    def __init__(self, backend, prefix):
+        self.backend = backend
+        self.prefix = prefix
+    def __getitem__(self, name):
+        return self.backend[self.prefix + name]
+    def __setitem__(self, name, val):
+        self.backend[self.prefix + name] = val
+d = {}
+cache = KeyPrepender(d, "my_")
+cache["foo"] = 10
+print(cache["foo"])  # 10
+print(d)             # {'my_foo': 10}
+\end{minted}
+
+	В C++ наоборот: перегрузить можно только оператор \t{=} в общем случае,
+	поэтому возникают прокси-объекты (тут не рассматриваем).
+\end{frame}
