@@ -1,0 +1,61 @@
+\subsection{Наследование}
+\begin{frame}
+	\tableofcontents[currentsection,currentsubsection]
+\end{frame}
+
+\begin{frame}[fragile]{Беда?}
+\begin{minted}{python}
+class Point:
+    def __init__(self, x, y): self.x, self.y = x, y
+    def __eq__(self, other):
+        return (self.x, self.y) == (other.x, other.y)
+class PointWithId(Point):
+    def __init__(self, x, y, id):
+        super(PointWithId, self).__init__(x, y)
+        self.id = id
+    def __eq__(self, other):  # Принцип Лисков?
+        return ((self.x, self.y, self.id) ==
+                (other.x, other.y, other.id))
+base, child = Point(1, 2), PointWithId(1, 2, 3)
+print(base.__eq__(child))            # True
+print(child.__eq__(base))            # AttributeError
+print(base == child, child == base)  # ???
+\end{minted}
+\end{frame}
+
+\begin{frame}[t]{Беда!}
+	Неясно, как сравнивать объекты разных типов на равенство в общем случае:
+	\begin{enumerate}
+		\item Можно запретить сравнение объектов разных типов, но нарушится
+			\only<-1>{???}\only<2->{принцип подстановки.}
+		\item Можно сравнивать только по общим полям, но тогда нарушится
+			\only<-2>{???}
+			\only<3->{
+			транзитивность:
+			\[(child_1 = base) \land (base = child_2) \not\Rightarrow child_1=child_2\]
+			}
+	\end{enumerate}
+	\only<4->{
+	В любом случае, суперкласс ничего про детей не знает, поэтому вызывать его метод скорее бессмысленно.
+	Python всегда вызовет метод подкласса (будь то \t{\_\_eq\_\_}, \t{\_\_le\_\_} или \t{\_\_ge\_\_}).
+
+	В других языках может быть по-другому!
+
+	Надёжнее всего считать объекты разных типов разными.
+	}
+\end{frame}
+
+\begin{frame}{Вообще беда}
+	С сортировкой ещё хуже.
+	Надо определить какой-то линейный порядок на всех объектах:
+	не только транзитивность, но ещё и согласованность с равенством, например:
+	\[ a \neq b \iff (a < b) \lor (a > b) \]
+
+	Как разрулить в общем случае?
+	\pause
+	Запретить сравнивать объекты разных типов!
+
+	Как тогда не нарушить принцип подстановки?
+	\pause
+	Запретить сравнивать объекты типа <<суперкласс>>, если только не известно заведомо, что они одного типа.
+\end{frame}

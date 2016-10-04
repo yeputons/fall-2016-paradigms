@@ -1,0 +1,85 @@
+\section{Перегрузка операторов}
+\subsection{Мотивация}
+
+\begin{frame}
+	\tableofcontents[currentsection]
+\end{frame}
+
+\begin{frame}[fragile]{Зачем перегружать?}
+	\begin{itemize}
+		\item Задание требуемой семантики у своих объектов:	
+\begin{minted}{python}
+class Foo:
+    def __init__(self, value):
+        self.value = value
+Foo("hello") == Foo("hello")  # False
+\end{minted}
+
+		\item Упрощение кода с математическими объектами:
+\begin{minted}{python}
+# До
+res = a.multiply(x).add(b.multiply(y)) \
+    .add(c).multiply(5).add(2)
+middle = vector1.add(vector2).multiply(0.5)
+	
+# После
+res = (a * x + b * y + c) * 5 + 2
+middle = (vector1 + vector2) / 2
+\end{minted}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Почему не перегружать?}
+	\pause
+	\begin{itemize}
+		\item
+			Разное поведение у похожих типов.
+			Например: определим \t{/} как целочисленное деление.
+			Лучше определить только \t{//}.
+			\pause
+		\item
+\begin{minted}{cpp}
+line a = /* ... */, b = /* ... */;
+if (a || b) { /* ... */ }
+\end{minted}
+			\pause
+			Можно сказать, что \t{||} возвращает, параллельны ли прямые.
+			Полностью изменяется семантика оператора.
+			\pause
+		\item
+			Скрывает сложные операции при чтении кода.
+			Может мешать при отладке и поиске медленных мест "--- нет явного вызова функции:
+\begin{minted}{python}
+a = 10 ** 10000
+b = 10 ** 10000
+# ...
+result = a * b  # Почему же тормозит?
+\end{minted}
+		\item
+			Неочевидное поведение: \t{vec1 * vec2}.
+			\pause
+			Векторное или скалярное произведение?
+	\end{itemize}
+\end{frame}
+
+\subsection{Немного магии}
+\begin{frame}{Магические методы}
+	\begin{itemize}
+		\item
+			\textit{Магическим} зовётся метод, название которого начинается и заканчивается на \t{\_\_}.
+			Например, \t{\_\_init\_\_} или \t{\_\_str\_\_}.
+		\item Ничего магического, кроме предназначения, в них нет.
+		\item Напрямую их вызывать не стоит!
+		\item Перечислены в документации по группам. Объекты могут прикидываться:
+			\begin{enumerate}
+				\item \href{https://docs.python.org/3/reference/datamodel.html\#emulating-numeric-types}{Числами}.
+				\item \href{https://docs.python.org/3/reference/datamodel.html\#object.\_\_lt\_\_}{Чем-то, что можно сравнивать}.
+				\item \href{https://docs.python.org/3/reference/datamodel.html\#emulating-callable-objects}{Функциями}.
+				\item \href{https://docs.python.org/3/reference/datamodel.html\#emulating-container-types}{Коллекциями} (массив, словарь, множество...).
+				\item \href{https://docs.python.org/3/library/stdtypes.html\#typeiter}{Итераторами} (обслуживают цикл \t{for}).
+				\item \href{https://docs.python.org/3/reference/datamodel.html\#with-statement-context-managers}{Чем-что, что можно автоматически закрывать} (файл, сетевое соединение).
+				\item И ещё много чем.
+			\end{enumerate}
+		\item Какая-то информация гуглится и \href{https://pythonworld.ru/osnovy/peregruzka-operatorov.html}{на русском}.
+	\end{itemize}
+\end{frame}

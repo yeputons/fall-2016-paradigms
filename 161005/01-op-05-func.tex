@@ -1,0 +1,39 @@
+\subsection{Притворяемся функцией}
+\begin{frame}
+	\tableofcontents[currentsection,currentsubsection]
+\end{frame}
+
+\begin{frame}[fragile]{Притворяемся функцией}
+\begin{minted}{python}
+class Summer:  # Сумма, а не лето :(
+    def __init__(self, k):
+        self.k = k
+    def __call__(self, *args):
+        return self.k * sum(args)
+s = Summer(3)
+print(s())       # 0
+print(s(1))      # 3
+print(s(1, 10))  # 33
+\end{minted}
+	Всё, что имеет метод \t{\_\_call\_\_}, может быть вызвано.
+	И наоборот:
+\begin{minted}{python}
+def foo(): print("foo")
+print(foo.__call__)
+foo.__call__()
+print(foo.__call__.__call__)
+\end{minted}
+\end{frame}
+
+\begin{frame}{Но зачем?}
+	\begin{itemize}
+		\item
+			Объект каком-то смысле представляет собой функцию.
+			Например: <<преобразование плоскости>>, <<логгер>> или <<выражение от одной переменной>>.
+		\item
+			В некоторых других языках это единственный способ сделать функцию с некоторым внутренним состоянием (кроме глобальных переменных).
+		\item
+			Все проблемы с перегрузкой операторов остаются.
+			Не злоупотребляйте!
+	\end{itemize}
+\end{frame}

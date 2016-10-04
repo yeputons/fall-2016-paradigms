@@ -1,0 +1,108 @@
+\subsection{Синтаксис сравнений}
+\begin{frame}
+	\tableofcontents[currentsection,currentsubsection]
+\end{frame}
+
+\begin{frame}[fragile]{Сравнения-1}
+\begin{minted}{python}
+class Natural:
+    def __init__(self, value):
+        self.value = value
+    def __lt__(self, other):  # Less than
+        return self.value < other.value
+    def __le__(self, other):  # Less or equal
+        return self.value <= other.value
+    def __eq__(self, other):
+        return self.value == other.value
+ONE, TWO = map(Natural, [1,2])
+print(ONE < TWO, ONE > TWO)    # True False
+print(ONE <= TWO, ONE >= TWO)  # True False
+print(ONE == TWO, ONE != TWO)  # False True
+print(ONE == ONE, ONE != ONE)  # True False
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{Сравнения-2}
+	\begin{itemize}
+		\item
+			Операторы \t{\_\_lt\_\_} и \t{\_\_gt\_\_} считаются отражениями друг друга.
+			Почти как \t{\_\_add\_\_} и \t{\_\_radd\_\_}.
+		\item
+			Оператор \t{\_\_ne\_\_} по умолчанию берёт отрицание от \t{\_\_eq\_\_}.
+		\item
+			Оператор \t{\_\_lt\_\_} автоматически из \t{\_\_le\_\_} и \t{\_\_eq\_\_} не выводится.
+	\end{itemize}
+	Можно использовать \textit{декоратор} \href{https://docs.python.org/3/library/functools.html\#functools.total\_ordering}{\t{total\_ordering}}:
+\begin{minted}{python}
+from functools import total_ordering
+@total_ordering  # Магия.
+class Natural:
+    # Надо задать метод __eq__ и один из четырёх сравнивающих.
+    #
+    # Остальное сгенерируется.
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{Хэш-таблицы-1}
+\begin{minted}{python}
+a = { Natural(1): 1 }  # TypeError: unhashable type
+
+class Natural:
+    def __init__(self, value):
+        self.value = value
+    def __eq__(self, other):
+        return self.value == other.value
+    def __hash__(self):
+        return hash(self.value)
+    def __repr__(self):
+        return "Natural({})".format(self.value)
+
+a = {Natural(x): x for x in range(5)}
+print(a)
+\end{minted}
+\end{frame}
+
+\begin{frame}{Хэш-таблицы-2}
+	\begin{itemize}
+		\item
+			\t{\_\_hash\_\_} вызывается функцией \t{hash}, когда элемент кладут в хэш-таблицу.
+			Должна вернуть \t{int}.
+		\item
+			Требование: если \t{a == b}, то \t{hash(a) == hash(b)} (в обратную сторону необязательно).
+		\item
+			Если определён \t{\_\_hash\_\_}, то обязательно определить \t{\_\_eq\_\_}.
+		\item
+			Для помещения в хэш-таблицу методы \t{\_\_lt\_\_} необязательны.
+		\item
+			В языке Java идеология похожа: методы \t{equals()} и \t{hashCode()}.
+		\item
+			Если объект может измениться (\textit{мутабельный}), то \t{\_\_hash\_\_} определять не стоит.
+			Почему?
+			\pause
+			Потому что если он изменится, пока лежит в хэш-таблице, она об этом не узнает и сломается.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Хэш-таблицы-3}
+	Чем плоха реализация строки ниже?
+\begin{minted}{python}
+class Str:
+    def __init__(self, value): self.value = value
+    def __eq__(self, other): return self.value == other.value
+    def __hash__(self):
+        result = 0
+        for c in self.value:
+            result = result * 239017 + ord(c)
+        return result
+\end{minted}
+	\pause
+\begin{minted}{python}
+print(hash("a" * 1000))
+print(hash(Str("a" * 1000)))
+print(hash("a" * 100000))
+print(hash(Str("a" * 100000)))
+\end{minted}
+	\pause
+	Тормозит, потому что в Python \t{int} автоматически преобразуется в длинную арифметику,
+	а не переполняется.
+\end{frame}

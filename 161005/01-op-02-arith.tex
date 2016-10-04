@@ -1,0 +1,79 @@
+\subsection{Синтаксис арифметики}
+
+\begin{frame}
+	\tableofcontents[currentsection,currentsubsection]
+\end{frame}
+
+\begin{frame}[fragile]{Как перегружать}
+\begin{minted}{python}
+class Natural:
+    def __init__(self, value):
+        assert value >= 1
+        self.value = value
+    def __add__(self, other):
+        return Natural(self.value + other.value)
+    def __sub__(self, other):
+        return Natural(self.value - other.value)
+    def  __repr__(self):  # Почти __str__
+        return "Natural({})".format(self.value)
+print(Natural(4) + Natural(3))  # Natural(7)
+print(Natural(4) - Natural(3))  # Natural(1)
+print(Natural(4) - Natural(4))  # AssertionError
+print(Natural(4).__sub__(Natural(3)))  # Не надо так!
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{Разные типы-1}
+\begin{minted}{python}
+print(Natural(4) + 3)           # AttributeError
+def better_add(self, other):
+    if isinstance(other, Natural):
+        return Natural(self.value + other.value)
+    elif isinstance(other, int):
+        return Natural(self.value + other)
+    else:
+        return NotImplemented
+Natural.__add__ = better_add
+
+print(Natural(4) + Natural(3))  # Natural(7)
+print(Natural(4) + 3)           # Natural(7)
+print(Natural(4) + "3")         # TypeError
+print(3 + Natural(4))           # TypeError?
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{Разные типы-2}
+\begin{minted}{python}
+print(3 + Natural(4))  # У int нет метода __add__ для Natural
+int.__add__ = None     # И задать часто нельзя. И не надо.
+Natural.__radd__ = Natural.__add__
+
+print(Natural(4) + 3)           # Natural(7)
+print(3 + Natural(4))           # Natural(7)
+\end{minted}
+
+	При вычислении выражения \t{a + b}:
+	\begin{enumerate}
+		\item Вызывается \t{a.\_\_add\_\_(b)}.
+		\item Если метод найден и не вернули \t{NotImplemented} "--- успех.
+		\item Иначе, если \t{a} и \t{b} разных типов, вызывается \t{b.\_\_radd\_\_(a)}\footnote{\textbf{r}everse \textbf{a}dd}.
+		\item Если не помогло "--- неуспех.
+	\end{enumerate}
+
+	Также есть методы \t{\_\_rsub\_\_}, \t{\_\_rmul\_\_} и другие.
+\end{frame}
+
+\begin{frame}[fragile]{Разные типы-3}
+\begin{minted}{python}
+class Foo:
+    def __add__(self, other):
+        print("add")
+        return NotImplemented
+    def __radd__(self, other):
+        print("radd")
+        return self
+
+Natural(3) + Foo()  # radd
+Foo() + Natural(3)  # add, TypeError
+\end{minted}
+\end{frame}

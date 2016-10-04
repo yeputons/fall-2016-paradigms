@@ -1,0 +1,93 @@
+\section{Притворяемся коллекцией}
+\subsection{Словарь}
+\begin{frame}
+	\tableofcontents[currentsection,currentsubsection]
+\end{frame}
+
+\begin{frame}[fragile]{Словарь}
+\begin{minted}{python}
+class KeyToPrependedKey:
+    def __init__(self, prefix):
+        self.prefix = prefix
+    def __getitem__(self, name):
+        return self.prefix + name
+a = KeyToPrependedKey("foo_")
+print(a["bar"])  # foo_bar
+\end{minted}
+	Ещё бывают методы \t{\_\_setitem\_\_}, \t{\_\_delitem\_\_}, \t{\_\_len\_\_}, \t{\_\_contains\_\_}, \t{\_\_reversed\_\_}, \t{\_\_missing\_\_}, \t{\_\_iter\_\_} (см. дальше).
+\end{frame}
+
+\begin{frame}[fragile]{Массив со срезами}
+	Срезы передаются просто как объект типа \t{slice}:
+\begin{minted}{python}
+class RangeMeasurer:
+    def __getitem__(self, s):
+        if isinstance(s, slice):
+            return s.stop - s.start
+        else:
+            return 1
+print(RangeMeasurer()[2:4])    # 2
+print(RangeMeasurer()[4:2])    # -2
+print(RangeMeasurer()[2:4:2])  # 2
+print(RangeMeasurer()[:2])     # ???
+print(RangeMeasurer()[2:])     # ???
+\end{minted}
+	\pause
+	Все случаи надо либо разбирать руками, либо использовать функцию \t{slice.range()}.
+\end{frame}
+
+\subsection{Итераторы}
+\begin{frame}
+	\tableofcontents[currentsection,currentsubsection]
+\end{frame}
+
+\begin{frame}[fragile]{Пример итератора}
+\begin{minted}{python}
+class CountDownIterator:
+    def __init__(self, start): self.value = start
+    def __iter__(self):
+        return self  # Так надо.
+    def __next__(self):
+        if self.value < 1:
+            raise StopIteration
+        self.value -= 1
+        return self.value + 1
+v = CountDownIterator(5)
+print(v)
+print(v.__next__())  # 5
+print(v.__next__())  # 4
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{Коллекции и итераторы}
+	Всё, у чего есть метод \t{\_\_iter\_\_}, можно запихнуть в цикл \t{for} и другие интересные места:
+\begin{minted}{python}
+a = [1,2,3]
+print([ x for x in a ])
+it = a.__iter__()
+print(it.__next__()) # 1
+print(it.__next__()) # 2
+print(it.__next__()) # 3
+print(it.__next__()) # StopIteration
+
+a = CountDownIterator(5)
+print(list(a))  # 5 4 3 2 1
+print(list(a))  # ???
+\end{minted}
+\end{frame}
+
+\begin{frame}{Что произошло}
+	\begin{itemize}
+		\item Если коллекция закончилась, итератор должен вызвать \t{raise StopIteration}.
+		\item Итератор "--- штука одноразовая, переиспользовать нельзя.
+		\item Метод \t{\_\_iter\_\_} у коллекций возвращает \textbf{новый} итератор, указывающий на начало коллекции.
+		\item Метод \t{\_\_iter\_\_} есть у каждого итератора, чтобы их можно было использовать там же, где и коллекции.
+		\item В других языках интерфейсы коллекции и итератора разнесены более явно.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Что такое StopIteration}
+	\t{StopIteration} "--- это так называемое \textit{исключение}.
+
+	Доделать.
+\end{frame}
