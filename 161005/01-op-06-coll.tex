@@ -36,6 +36,30 @@ print(RangeMeasurer()[2:])     # ???
 	Все случаи надо либо разбирать руками, либо использовать функцию \t{slice.range()}.
 \end{frame}
 
+\begin{frame}[fragile]{Присваивание}
+	Оператор \t{=} в Python в общем случае перегрузить нельзя: \t{a = b}
+	всегда изменит значение \t{a} на \t{b} копированием ссылки.
+	Но можно перегрузить в частных случаях:
+\begin{minted}{python}
+class KeyPrepender:
+    def __init__(self, backend, prefix):
+        self.backend = backend
+        self.prefix = prefix
+    def __getitem__(self, name):
+        return self.backend[self.prefix + name]
+    def __setitem__(self, name, val):
+        self.backend[self.prefix + name] = val
+d = {}
+cache = KeyPrepender(d, "my_")
+cache["foo"] = 10
+print(cache["foo"])  # 10
+print(d)             # {'my_foo': 10}
+\end{minted}
+
+	В C++ наоборот: перегрузить можно только оператор \t{=} в общем случае,
+	поэтому возникают прокси-объекты (тут не рассматриваем).
+\end{frame}
+
 \subsection{Итераторы}
 \begin{frame}
 	\tableofcontents[currentsection,currentsubsection]
@@ -54,21 +78,21 @@ class CountDownIterator:
         return self.value + 1
 v = CountDownIterator(5)
 print(v)
-print(v.__next__())  # 5
-print(v.__next__())  # 4
+print(next(v))  # 5
+print(next(v))  # 4
 \end{minted}
 \end{frame}
 
 \begin{frame}[fragile]{Коллекции и итераторы}
 	Всё, у чего есть метод \t{\_\_iter\_\_}, можно запихнуть в цикл \t{for} и другие интересные места:
 \begin{minted}{python}
-a = [1,2,3]
-print([ x for x in a ])
-it = a.__iter__()
-print(it.__next__()) # 1
-print(it.__next__()) # 2
-print(it.__next__()) # 3
-print(it.__next__()) # StopIteration
+a = [1, 2, 3]
+print([ x for x in a ])  # [1, 2, 3]
+it = iter(a)  # Вызывает __iter__.
+print(next(it))  # 1
+print(next(it))  # 2
+print(next(it))  # 3
+print(next(it))  # StopIteration
 
 a = CountDownIterator(5)
 print(list(a))  # 5 4 3 2 1
@@ -78,7 +102,7 @@ print(list(a))  # ???
 
 \begin{frame}{Что произошло}
 	\begin{itemize}
-		\item Если коллекция закончилась, итератор должен вызвать \t{raise StopIteration}.
+		\item Если коллекция закончилась, итератор должен вызвать \t{raise~StopIteration}.
 		\item Итератор "--- штука одноразовая, переиспользовать нельзя.
 		\item Метод \t{\_\_iter\_\_} у коллекций возвращает \textbf{новый} итератор, указывающий на начало коллекции.
 		\item Метод \t{\_\_iter\_\_} есть у каждого итератора, чтобы их можно было использовать там же, где и коллекции.
@@ -86,8 +110,54 @@ print(list(a))  # ???
 	\end{itemize}
 \end{frame}
 
-\begin{frame}{Что такое StopIteration}
+\begin{frame}{StopIteration}
 	\t{StopIteration} "--- это так называемое \textit{исключение}.
 
-	Доделать.
+	\begin{itemize}
+		\item Исключения "--- один из механизмов обработки ошибок (исключительных ситуаций):
+			\begin{enumerate}
+				\item Произошла ошибка.
+				\item Создали объект класса \textit{исключение} (или подкласса: \t{TypeError}, \t{KeyError}, ...).
+				\item \t{Кинули} его (сленг) командой \t{raise SomeException()}.
+				\item Исключение пошло вверх по стеку вызовов до ближайшего обработчика, соответствующего типа.
+				\item Обработчик решает, что делать с исключением.
+			\end{enumerate}
+		\item Можно воспринимать как такой <<\t{return} из всех функций сразу до ближайшего обработчика>>.
+		\item Более подробно пока не рассматриваем.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Как ловить StopIteration}
+\begin{minted}{python}
+def print_next(it):
+    print(next(it))
+def print_two_next(it):
+    print_next(it)
+    print_next(it)
+    print("Printed two items")
+try:  # Начало блока, где может вылететь исключение.
+    print_two_next(iter([1]))
+    print("Finished")
+except StopIteration:  # Обработчик исключения StopIteration.
+    print("Stopped")
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{Задание в классе}
+	Напишите <<свою>> реализацию цикла \t{for}:
+\begin{minted}{python}
+def foreach(items, callback):
+    # Перепишите эту функцию без цикла for.
+    for item in items:
+        callback(item)
+
+# Примеры.
+foreach([1, 2, 3], print) # 1 2 3
+foreach([1, 2, 3], lambda x: print(x, end=";")) # 1;2;3;
+print()
+foreach(CountDownIterator(3), print) # 3 2 1
+
+foreach({"a": False, "b": True}.items(), print)
+# ('a', False) ('b', True) в любом порядке.
+\end{minted}
 \end{frame}
