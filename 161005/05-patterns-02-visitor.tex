@@ -1,0 +1,156 @@
+\subsection{Паттерн Visitor}
+
+\begin{frame}
+	\tableofcontents[currentsection,currentsubsection]
+\end{frame}
+
+\begin{frame}{Постановка задачи}
+	Пусть есть разношёрстные классы, например, элементы синтаксического дерева языка ЯТЬ:
+	\t{Scope}, \t{Function}, \t{Read}, \t{Write}.
+	И ещё есть операции над этими объектами: вывести красиво отформатированный код,
+	соптимизировать кусочек дерева (например, заменить \t{2+2} на \t{4}),
+	скомпилировать программу.
+
+	Вопрос: где описывать эти операции?
+	\pause
+	Несколько вариантов:
+	\begin{enumerate}
+		\item
+			Добавить методы \t{pretty\_print}, \t{optimize}, \t{compile} всем классам.
+		\item
+			Сделать одну функцию на операцию, которая может вызывать сама себя рекурсивно
+			и руками проверяет тип объекта.
+		\item
+			Паттерн \textit{Visitor}: сделать класс, соответствующий операции, с методами
+			<<обработай \t{Scope}>>, <<обработай \t{Function}>>, и так далее.
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]{Пример внутри классов}
+\begin{minted}{python}
+import random
+class Cat:
+    def pat_head(self): print("Purr!")
+    def rub_belly(self): print("Don't you dare!")
+    def happiness(self): return random.randint(1, 5)
+    def pet(self): self.pat_head()
+    def is_safe(self): return self.happiness() >= 3
+class Dog:
+    def pat_head(self): print("I'm happy!")
+    def rub_belly(self): print("I'm very happy!")
+    def tail_wagging(self): return True
+    def pet(self): self.rub_belly()
+    def is_safe(self): return self.tail_wagging()
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{Пример в функциях}
+\begin{minted}{python}
+import random
+class Cat:
+    def pat_head(self): print("Purr!")
+    def rub_belly(self): print("Don't you dare!")
+    def happiness(self): return random.randint(1, 5)
+class Dog:
+    def pat_head(self): print("I'm happy!")
+    def rub_belly(self): print("I'm very happy!")
+    def tail_wagging(self): return True
+def pet(a):
+    if isinstance(a, Cat): a.pat_head()
+    elif isinstance(a, Dog): a.rub_belly()
+def is_safe(a):
+    if isinstance(a, Cat): return a.happiness() >= 3
+    elif isinstance(a, Dog): return a.tail_wagging()
+\end{minted}
+\end{frame}
+
+\begin{frame}{Возможные проблемы}
+	Если добавляем методы в классы, то:
+	\pause
+	\begin{itemize}
+		\item Логика операции оказывается разнесённой по разным кускам кода.
+		\item Добавили операцию "--- надо проверить, что ни в одном из классов не забыли
+			(Python-то не проверяет соответствие интерфейсам).
+		\item
+			При добавлении операций изменяются интерфейсы классов, придётся всё перекомпилировать.
+	\end{itemize}
+
+	\pause
+	Если делаем одну функцию, то:
+	\pause
+	\begin{itemize}
+		\item Куча неприятного кода для определения типа, захочется разделить определение типа и содержательную обработку.
+		\item В некоторых языках проверить тип переданного объекта в run time очень сложно (например, С "--- надо что-то руками делать).
+		\item В статически типизированных языках надо ещё и изменять тип переменной.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Волшебный единорог}
+	Паттерн Visitor (\textit{посетитель}):
+	\begin{enumerate}
+		\item
+			Создаём интерфейс \t{Visitor} с функциями \t{visit\_scope}, \t{visit\_function}, \t{visit\_read}...
+			\footnote{в некоторых языках (C++, Java) все методы назовут visit, а отличия будут лишь в типе аргумента}.
+		\item
+			Требуем, чтобы каждый класс имел функцию \t{accept(visitor)}, которая бы вызывала у параметра нужный метод.
+		\item
+			Для определения операции достаточно создать новый класс, реализующий интерфейс \t{Visitor}.
+		\item
+			Для вызова операции на элементе достаточно вызывать \t{item.accept(visitor)}.
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]{Пример-1}
+\begin{minted}{python}
+import random
+class Cat:
+    def pat_head(self): print("Purr!")
+    def rub_belly(self): print("Don't you dare!")
+    def happiness(self): return random.randint(1, 5)
+    def visit(self, v): return v.visit_cat(self)
+class Dog:
+    def pat_head(self): print("I'm happy!")
+    def rub_belly(self): print("I'm very happy!")
+    def tail_wagging(self): return True
+    def visit(self, v): return v.visit_dog(self)
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{Пример-2}
+\begin{minted}{python}
+class PetVisitor:
+    def visit_cat(self, a): a.pat_head()
+    def visit_dog(self, a): a.rub_belly()
+class IsSafeVisitor:
+    def visit_cat(self, a): return a.happiness() >= 3
+    def visit_dog(self, a): return a.tail_wagging()
+
+Cat().visit(PetVisitor())  # Purr!
+Dog().visit(PetVisitor())  # I'm very happy!
+print(Cat().visit(IsSafeVisitor()))  # random
+print(Dog().visit(IsSafeVisitor()))  # True
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{Замечание про возвращаемые значения}
+	\begin{enumerate}
+		\item
+			В статически типизированных языках нельзя вернуть произвольное значение из методов,
+			надо указывать какой-то тип.
+		\item
+			При этом указывать тип <<всё что угодно>> нехорошо, так как теряется безопасность.
+			Фиксировать конкретный тип для всех посетителей тоже нехорошо.
+		\item
+			Поэтому часто считают, что \t{visit}/\t{accept} вообще ничего не возвращают.
+			А в Python легко забыть \t{return} и не заметить :)
+		\item
+			Если посетитель что-то должен вычислять, то он хранит результат вычисления внутри себя:
+\begin{minted}{python}
+class IsSafeVisitor:
+    def visit_cat(self, a):
+        self.result = a.happiness() >= 3
+    def visit_dog(self, a):
+        self.result a.tail_wagging()
+\end{minted}
+	\end{enumerate}
+\end{frame}
