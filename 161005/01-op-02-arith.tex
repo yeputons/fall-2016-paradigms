@@ -18,8 +18,8 @@ class Natural:
         return "Natural({})".format(self.value)
 print(Natural(4) + Natural(3))  # Natural(7)
 print(Natural(4) - Natural(3))  # Natural(1)
-print(Natural(4) - Natural(4))  # AssertionError
 print(Natural(4).__sub__(Natural(3)))  # Не надо так!
+print(Natural(4) - Natural(4))  # AssertionError
 \end{minted}
 \end{frame}
 
