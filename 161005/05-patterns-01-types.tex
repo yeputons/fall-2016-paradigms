@@ -69,8 +69,7 @@
 def create_button():
     builder = ButtonBuilder()
     builder.set_text("Кнопка")
-    if some_complex_condition():
-        builder.set_image("image.png")
+    if some_complex_condition(): builder.set_disabled()
     return builder.build()
 \end{minted}
 		\item
