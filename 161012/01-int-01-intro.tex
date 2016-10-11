@@ -1,0 +1,40 @@
+\section{Целые числа}
+\subsection{Физическая часть}
+
+\begin{frame}
+	\tableofcontents[currentsection,currentsubsection]
+\end{frame}
+
+\begin{frame}
+	Упрощённое представление:
+	\begin{enumerate}
+		\item Два уровня напряжения распознавать проще, чем три.
+		\item Но три тоже было, не прижилось.
+		\item Всё построено на основе бинарных функций <<И>>, <<ИЛИ>> и остальных (\textit{гейты})
+		\item Чем меньше гейтов "--- тем быстрее работает, тем меньше схема.
+	\end{enumerate}
+\end{frame}
+
+\subsection{Типы данных}
+\begin{frame}
+	Чему соответствует бинарная запись в таблице ниже?
+	\begin{center}
+		\pause
+		\begin{tabular}{|c|c|}
+			\hline
+			\t{0001 0110} & \pause 22 \\\hline\noalign{\pause}
+			\t{1000 0010} & \pause 130 \\\hline\noalign{\pause}
+			\t{1000 0010} & \pause -126 \\\hline\noalign{\pause}
+			\t{0011 0000} & \pause 48 \\\hline\noalign{\pause}
+			\t{0011 0000} & \pause '0' \\\hline\noalign{\pause}
+			\t{1100 0011} & \pause \t{0xC3} \\\hline\noalign{\pause}
+			\t{1100 0011} & \pause \t{ret} \\\hline
+		\end{tabular}
+		\pause
+	\end{center}
+	Мораль: битовое представление ничего не говорит, если мы не договорились о том,
+	как его интерпретировать (<<тип>>).
+
+	Более того, представлений у одной и той же сущности может быть в
+	некотором смысле много (\t{0xC3}, 195, \t{ret}).
+\end{frame}

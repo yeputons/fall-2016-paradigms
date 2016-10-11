@@ -1,0 +1,37 @@
+\documentclass[utf8,xcolor=table]{beamer}
+
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{minted}
+\usepackage{ulem}
+\usepackage{cmap}
+
+\hypersetup{colorlinks,linkcolor=blue,urlcolor=blue}
+
+\mode<presentation>{
+	\usetheme{CambridgeUS}
+}
+
+\renewcommand{\t}[1]{\ifmmode{\mathtt{#1}}\else{\texttt{#1}}\fi}
+
+\title{Арифметика в компьютерах}
+\author{Егор Суворов}
+\institute[СПб АУ]{Курс <<Парадигмы и языки программирования>>, подгруппа 3}
+\date[12.10.2016]{Среда, 12 октября 2016 года}
+
+\setlength{\arrayrulewidth}{1pt}
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}{План занятия}
+	\tableofcontents
+\end{frame}
+
+\input{01-int-01-intro}
+
+\end{document}
