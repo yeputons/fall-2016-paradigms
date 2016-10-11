@@ -1,0 +1,77 @@
+\subsection{Порядок байт}
+
+\begin{frame}
+	\tableofcontents[currentsection,currentsubsection]
+\end{frame}
+
+\begin{frame}
+	Напоминание: порядок бит в байте мы из программы никак не определим, на картинке "--- слева старшие, справа младшие.
+	Порядок байт в памяти "--- слева меньшие адреса, справа большие.
+
+	Игра:
+	\begin{center}
+		\pause
+		\begin{tabular}{|c|c|c|c|c|c|c|}
+			\hline
+			\multicolumn{5}{|c|}{Адрес} & \\\hline
+			0 & 1 & 2 & 3 & 4 & Значение \\\hline
+			\dots & \dots & \t{0000 0001} & \t{0000 0011} & \dots & \pause 259 \\\hline\noalign{\pause}
+			\dots & \dots & \t{0000 0001} & \t{0000 0011} & \dots & \pause 769 \\\hline
+		\end{tabular}
+		\pause
+	\end{center}
+
+	Да как договоримся, так и читать.
+	Байты бывают младшие и старшие.
+	Договариваются по-разному на разных процессорах и в разных протоколах.
+	Свойство <<порядок байт>> называется endianness.
+\end{frame}
+
+\begin{frame}
+
+	\begin{center}
+		\includegraphics[scale=0.3]{eggs.jpg}
+	\end{center}
+
+	Есть два клана: little-endian (остроконечники) и big-endian (тупоконечники).
+	По-русски всегда используют английские термины.
+\end{frame}
+
+\begin{frame}{Big-endian}
+	Используется в низкоуровневых сетевых протоколах (TCP) и процессорах Atmel AVR (ATmega и прочие).
+
+	Младший байт имеет больший адрес.
+	Тогда запись совпадает с <<естественной>>:
+	\begin{center}
+		\begin{tabular}{|c|c|c|c|c|c|c|}
+			\hline
+			\multicolumn{5}{|c|}{Адрес} & \\\hline
+			0 & 1 & 2 & 3 & 4 & Значение \\\hline
+			\dots & \dots & \t{0000 0001} & \t{0000 0011} & \dots & $\t{0000 00\textbf{01} 0000 00\textbf{11}}_2=769_{10}$ \\\hline
+		\end{tabular}
+	\end{center}
+\end{frame}
+
+\begin{frame}{Little-endian}
+	Используется в x86.
+
+	Младший байт имеет меньший адрес.
+	Читается хуже:
+	\begin{center}
+		\begin{tabular}{|c|c|c|c|c|c|c|}
+			\hline
+			\multicolumn{5}{|c|}{Адрес} & \\\hline
+			0 & 1 & 2 & 3 & 4 & Значение \\\hline
+			\dots & \dots & \t{0000 0001} & \t{0000 0011} & \dots & $\t{0000 00\textbf{11} 0000 00\textbf{01}}_2=259_{10}$ \\\hline
+		\end{tabular}
+	\end{center}
+	Если только мы не Intel и не пишем к этому документацию:
+	\begin{center}
+		\begin{tabular}{|c|c|c|c|c|c|c|}
+			\hline
+			\multicolumn{5}{|c|}{Адрес} & \\\hline
+			4 & 3 & 2 & 1 & 0 & Значение \\\hline
+			\dots & \dots & \t{1100 0000} & \t{1000 0000} & \dots & $\t{0000 0011 0000 0001}_2=259_{10}$ \\\hline
+		\end{tabular}
+	\end{center}
+\end{frame}
