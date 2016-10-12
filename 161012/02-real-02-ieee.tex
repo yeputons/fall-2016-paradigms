@@ -76,7 +76,7 @@
 	Так как в $m$ предполагается 23 значащих знака (а у нас в $m'$ только 6), надо дописать \textit{справа} нулей.
 	Итого:
 	\begin{center}
-		\begin{tabular}{c|c|c|c}
+		\begin{tabular}{c|c|c}
 			\multicolumn{3}{c}{Биты} \\
 			31 & 30-23 & 22-0 \\\hline
 			\t{1} & $\underbrace{\t{100~0001~0}}_{e+128}$ & $\underbrace{\t{\textbf{101~110}0~0000~0000~0000~0000}}_{m}$ \\
@@ -126,7 +126,7 @@ print(x, x / 2 * 2)
 \begin{frame}{Формат}
 	Скажем, что если экспонента состоит из нулей, то у нас денормализованное число:
 	\begin{center}
-		\begin{tabular}{|r|c|c|c|}
+		\begin{tabular}{r|c|c|c}
 			\multicolumn{3}{c}{Биты} \\
 			31 & 30-23 & 22-0 \\\hline
 			знак ($s$) & нули & мантисса $m$ \\
@@ -156,7 +156,7 @@ print(x, x / 2 * 2)
 \begin{frame}{Все особенности IEEE-754}
 	Числа, доступные в IEEE 754 одинарной точности:
 	\begin{center}
-		\begin{tabular}{|r|c|c|c|c|}
+		\begin{tabular}{r|c|c|c}
 			\multicolumn{3}{c}{Биты} & \\
 			31 & 30-23 & 22-0 & Значение \\\hline
 			\t{0} & \t{111 1111 1} & \t{000 0000 0000 0000 0000 0000} & $+\infty $\\
@@ -172,6 +172,8 @@ print(x, x / 2 * 2)
 
 \begin{frame}{Упражнение}
 	\begin{enumerate}
+		\item
+			Введите несколько простых десятичных дробей в Python и попробуйте методы \t{float.as\_integer\_ratio()} и \t{float.hex()}.
 		\item
 			Составьте таблицу сравнения для \t{0}, \t{+0}, \t{-0} на Python: кто кому равен, кто кого меньше.
 		\item
