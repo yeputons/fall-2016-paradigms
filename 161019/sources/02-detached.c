@@ -5,17 +5,17 @@
 
 int data = 1234;
 void* worker(void* arg __attribute__((unused))) {
-  printf("Hello from thread! data=%d\n", data);
-  data += 10;
-  return NULL;
+    printf("Hello from thread! data=%d\n", data);
+    data += 10;
+    return NULL;
 }
 
 int main(void) {
-  pthread_t id;
-  assert(pthread_create(&id, NULL, worker, NULL) == 0);
-  assert(pthread_detach(id) == 0);
-  // assert(pthread_join(id, NULL) == 0);
-  printf("data is %d\n", data);
-  pthread_exit(NULL);
-  return 0;
+    pthread_t id;
+    assert(pthread_create(&id, NULL, worker, NULL) == 0);
+    assert(pthread_detach(id) == 0);
+    // assert(pthread_join(id, NULL) == 0);
+    printf("data is %d\n", data);
+    pthread_exit(NULL);
+    return 0;
 }

@@ -23,15 +23,15 @@
 \begin{minted}{cpp}
 int data;
 void* worker(void* arg __attribute__((unused))) {
-  pthread_mutex_t m;
-  pthread_mutex_init(&m, NULL);
-  for (int i = 0; i < N; i++) {
-    pthread_mutex_lock(&m);
-    data++;
-    pthread_mutex_unlock(&m);
-  }
-  pthread_mutex_destroy(&m);
-  return NULL;
+    pthread_mutex_t m;
+    pthread_mutex_init(&m, NULL);
+    for (int i = 0; i < N; i++) {
+        pthread_mutex_lock(&m);
+        data++;
+        pthread_mutex_unlock(&m);
+    }
+    pthread_mutex_destroy(&m);
+    return NULL;
 }
 \end{minted}
 \href{https://github.com/yeputons/fall-2016-paradigms/raw/master/161019/sources/09-two-threads-bad-mutex.c}{Код}.
@@ -42,12 +42,12 @@ void* worker(void* arg __attribute__((unused))) {
 int data;
 pthread_mutex_t m;
 void* worker(void* arg __attribute__((unused))) {
-  for (int i = 0; i < N; i++) {
-    pthread_mutex_lock(&m);
-    data++;
-    pthread_mutex_unlock(&m);
-  }
-  return NULL;
+    for (int i = 0; i < N; i++) {
+        pthread_mutex_lock(&m);
+        data++;
+        pthread_mutex_unlock(&m);
+    }
+    return NULL;
 }
 // ...
   pthread_mutex_init(&m, NULL);
@@ -74,14 +74,14 @@ void* worker(void* arg __attribute__((unused))) {
 		\item Есть ли проблемы в следующем псевдокоде?
 \begin{minted}{cpp}
 void thread1() {
-  m1.lock(); m2.lock();
-  // ...
-  m2.unlock(); m1.unlock();
+    m1.lock(); m2.lock();
+    // ...
+    m2.unlock(); m1.unlock();
 }
 void thread2() {
-  m2.lock(); m1.lock();
-  // ...
-  m1.unlock(); m2.unlock();
+    m2.lock(); m1.lock();
+    // ...
+    m1.unlock(); m2.unlock();
 }
 \end{minted}
 	\end{itemize}
@@ -112,15 +112,15 @@ void thread2() {
 \begin{frame}[fragile]{Мьютексы "--- не панацея}
 \begin{minted}{cpp}
 void inc() {  // Атомарна.
-  m.lock(); data++; m.unlock();
+    m.lock(); data++; m.unlock();
 }
 void double_inc() {  // Не атомарно.
-  inc(); inc();
+    inc(); inc();
 }
 void check() {
-  m.lock();
-  assert(data % 2 == 0);
-  m.unlock();
+    m.lock();
+    assert(data % 2 == 0);
+    m.unlock();
 }
 \end{minted}
 	\begin{itemize}
@@ -133,10 +133,10 @@ void check() {
 \begin{frame}[fragile]{Reentrant}
 \begin{minted}{cpp}
 void inc() {  // Атомарна.
-  m.lock(); data++; m.unlock();
+    m.lock(); data++; m.unlock();
 }
 void double_inc() {  // Атомарно?
-  m.lock(); inc(); inc(); n.unlock();
+    m.lock(); inc(); inc(); n.unlock();
 }
 \end{minted}
 	\begin{itemize}
@@ -151,12 +151,12 @@ void double_inc() {  // Атомарно?
 \begin{minted}{cpp}
 void inc_lock_held() { data++; }  // Приватная
 void inc() {
-  m.lock(); inc_lock_held(); m.unlock();
+    m.lock(); inc_lock_held(); m.unlock();
 }
 void double_inc() {
-  m.lock();
-  inc_lock_held(); inc_lock_held();
-  m.unlock();
+    m.lock();
+    inc_lock_held(); inc_lock_held();
+    m.unlock();
 }
 \end{minted}
 	В ООП функция \t{inc\_lock\_held} обязательно была бы приватной.
@@ -166,10 +166,10 @@ void double_inc() {
 	Есть ли проблема?
 \begin{minted}{cpp}
 void inc_special() {
-  m.lock();
-  if (condition()) return;
-  data++;
-  m.unlock();
+    m.lock();
+    if (condition()) return;
+    data++;
+    m.unlock();
 }
 \end{minted}
 	\pause
@@ -185,19 +185,19 @@ void inc_special() {
 	Идиома \textit{RAII}:
 \begin{minted}{cpp}
 void inc_special() {
-  ScopedLock lock(m);  // Берём блокировку в конструкторе
-  if (conditoin()) return;
-  data++;
+    ScopedLock lock(m);  // Берём блокировку в конструкторе
+    if (conditoin()) return;
+    data++;
 }  // Освобождаем в деструкторе.
 \end{minted}
 
-	synchronized-блоки в Java (каждый автоматически получает личный мьютекс):
+	synchronized-блоки в Java (каждый получит мьютекс):
 \begin{minted}{java}
 void inc_special() {
-  synchronized {
-    if (condition()) return;
-    data++;
-  }
+    synchronized {
+        if (condition()) return;
+        data++;
+    }
 }
 \end{minted}
 \end{frame}
@@ -205,7 +205,7 @@ void inc_special() {
 \begin{frame}{Резюме}
 	\begin{itemize}
 		\item Атомарные операции в потоках могут выполняться в любом порядке, если их не синхронизировать.
-		\item Вы обычно не знаете, что атомарно, а что нет (кроме взятия мьютексов).
+		\item Вы обычно не знаете, что атомарно, а что нет.
 		\item \textit{Любой} доступ к общим ресурсам должен быть \textit{защищён} (guarded) блокировкой.
 		\item В частности, любая переменная, доступная из нескольких потоков, должна быть защищена \textit{ровно} одной блокировкой (почему?).
 		\item Блокировки надо брать всегда в одном и том же порядке.

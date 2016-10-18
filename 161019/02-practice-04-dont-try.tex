@@ -10,13 +10,13 @@
 \begin{minted}{cpp}
 int data;
 void* worker(void* arg __attribute__((unused))) {
-  for (;;) {
-    data++;
-  }
+    for (;;) {
+        data++;
+    }
 }
 // ...
-  while (data < 100);
-  printf("Done\n");
+    while (data < 100);
+    printf("Done\n");
 // ...
 \end{minted}
 	\begin{itemize}
@@ -51,13 +51,13 @@ void* worker(void* arg __attribute__((unused))) {
 \begin{minted}{cpp}
 volatile int data;  // Обозначили переменную volatile.
 void* worker(void* arg __attribute__((unused))) {
-  for (;;) {
-    data++;
-  }
+    for (;;) {
+        data++;
+    }
 }
 // ...
-  while (data < 100);
-  printf("Done\n");
+    while (data < 100);
+    printf("Done\n");
 // ...
 \end{minted}
 	\begin{itemize}
@@ -92,7 +92,7 @@ data = 123;
 		\pause\item А что, если в другом потоке было так?
 \begin{minted}{cpp}
 if (finished) {
-  printf("%d\n", data);
+    printf("%d\n", data);
 }
 \end{minted}
 	\end{itemize}
@@ -140,9 +140,9 @@ finished2 = true;
 // Thread 2
 m.lock(); m.unlock();
 if (finished2) {
-  assert(started);    // Верно
-  assert(data > 0);   // Верно
-  assert(finished1);  // Может быть неверно
+    assert(started);    // Верно
+    assert(data > 0);   // Верно
+    assert(finished1);  // Может быть неверно
 }
 \end{minted}
 	Если убрать из второго потока мьютекс "--- ничего не знаем.

@@ -7,16 +7,16 @@
 
 volatile int data;
 void* worker(void* arg __attribute__((unused))) {
-  for (;;) {
-    data++;
-  }
+    for (;;) {
+        data++;
+    }
 }
 
 int main(void) {
-  pthread_t id;
-  assert(pthread_create(&id, NULL, worker, NULL) == 0);
-  while (data < 100);
-  printf("Done\n");
-  assert(pthread_join(id, NULL) == 0);
-  return 0;
+    pthread_t id;
+    assert(pthread_create(&id, NULL, worker, NULL) == 0);
+    while (data < 100);
+    printf("Done\n");
+    assert(pthread_join(id, NULL) == 0);
+    return 0;
 }
