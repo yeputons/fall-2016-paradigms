@@ -59,10 +59,10 @@ void* worker(void* arg __attribute__((unused))) {
 
 \begin{frame}{Упражнение}
 	\begin{enumerate}
-		\item Добавьте mutex в \href{https://github.com/yeputons/fall-2016-paradigms/raw/master/161019/sources/08-two-threads.c}{двойной счётчик}.
-		\item Уменьшите $N$ на несколько порядков (mutex'ы сильно замедляют программу).
+		\item Добавьте мьютекс в \href{https://github.com/yeputons/fall-2016-paradigms/raw/master/161019/sources/08-two-threads.c}{двойной счётчик}.
+		\item Уменьшите $N$ на несколько порядков (мьютексы сильно замедляют программу).
 		\item Убедитесь, что всегда выводится $2N$.
-		\item Добавьте mutex в \href{https://github.com/yeputons/fall-2016-paradigms/raw/master/161019/sources/04-writeln-race.c}{writeln}.
+		\item Добавьте мьютекс в \href{https://github.com/yeputons/fall-2016-paradigms/raw/master/161019/sources/04-writeln-race.c}{writeln}.
 	\end{enumerate}
 	\href{https://github.com/yeputons/fall-2016-paradigms/raw/master/161019/sources/10-two-threads-good-mutex.c}{Исправленный двойной счётчик},
 	\href{https://github.com/yeputons/fall-2016-paradigms/raw/master/161019/sources/11-writeln-mutex.c}{исправленный writeln}.
@@ -105,39 +105,112 @@ void thread2() {
 			Решение: всегда брать блокировки в одном и том же порядке.
 			Тогда можно доказать, что deadlock такого вида не образуется.
 		\item
-			Если ввести линейный порядок на mutex не получается, у вас проблема.
+			Если ввести линейный порядок на мьютексах не получается, у вас проблема.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Мьютексы "--- не панацея}
+\begin{minted}{cpp}
+void inc() {  // Атомарна.
+  m.lock(); data++; m.unlock();
+}
+void double_inc() {  // Не атомарно.
+  inc(); inc();
+}
+void check() {
+  m.lock();
+  assert(data % 2 == 0);
+  m.unlock();
+}
+\end{minted}
+	\begin{itemize}
+		\item Код выше может упасть, даже если вызывать только \t{double\_inc}.
+		\item Мьютекс в простом случае лишь добавляет атомарности.
+		\item Две атомарные операции подряд, как и раньше, атомарную вместе не образуют.
 	\end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]{Reentrant}
 \begin{minted}{cpp}
-void inc() {
+void inc() {  // Атомарна.
   m.lock(); data++; m.unlock();
 }
-void double_inc() {
-  m.lock(); inc(); inc(); m.unlock();
+void double_inc() {  // Атомарно?
+  m.lock(); inc(); inc(); n.unlock();
 }
 \end{minted}
 	\begin{itemize}
-		\item \t{double\_inc} заблокируется, так как \t{inc} попробует взять mutex второй раз.
-		\item Есть специальный вид mutex, которые позволяют захватывать себя ещё раз из того же потока, называется \textit{reentrant}.
+		\item \t{double\_inc} заблокируется, так как \t{inc} попробует взять мьютекс второй раз.
+		\item Есть специальный вид мьютексов, которые позволяют захватывать себя ещё раз из того же потока, называется \textit{reentrant}.
 		\item Их обычно не используют "--- они сложнее в реализации.
-		\item
-			Решение: ввести <<приватную>> функцию \t{inc\_lock\_held}, которая предполагает,
-			что mutex уже взят.
 	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Решение}
+	Вынести специальную функцию для внутреннего использования, которая предполагает, что блокировка уже взята:
+\begin{minted}{cpp}
+void inc_lock_held() { data++; }  // Приватная
+void inc() {
+  m.lock(); inc_lock_held(); m.unlock();
+}
+void double_inc() {
+  m.lock();
+  inc_lock_held(); inc_lock_held();
+  m.unlock();
+}
+\end{minted}
+	В ООП функция \t{inc\_lock\_held} обязательно была бы приватной.
+\end{frame}
+
+\begin{frame}[fragile]{Блокировка "--- ресурс}
+	Есть ли проблема?
+\begin{minted}{cpp}
+void inc_special() {
+  m.lock();
+  if (condition()) return;
+  data++;
+  m.unlock();
+}
+\end{minted}
+	\pause
+	\begin{itemize}
+		\item Есть: блокировка может быть не отпущена в случае досрочного \t{return}.
+		\item Тогда \t{m} больше никто никогда не захватит и все следующие вызовы \t{inc\_special} не смогут начаться.
+		\item Вам поможет привычка всегда освобождать взятые ресурсы (файлы, память, \textit{мьютекс}).
+		\item Или специальный синтаксический сахар вроде RAII в C++, или try-with-resources/synchronized-блоков в Java.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Синтаксический сахар}
+	Идиома \textit{RAII}:
+\begin{minted}{cpp}
+void inc_special() {
+  ScopedLock lock(m);  // Берём блокировку в конструкторе
+  if (conditoin()) return;
+  data++;
+}  // Освобождаем в деструкторе.
+\end{minted}
+
+	synchronized-блоки в Java (каждый автоматически получает личный мьютекс):
+\begin{minted}{java}
+void inc_special() {
+  synchronized {
+    if (condition()) return;
+    data++;
+  }
+}
+\end{minted}
 \end{frame}
 
 \begin{frame}{Резюме}
 	\begin{itemize}
 		\item Атомарные операции в потоках могут выполняться в любом порядке, если их не синхронизировать.
-		\item Вы обычно не знаете, что атомарно, а что нет.
+		\item Вы обычно не знаете, что атомарно, а что нет (кроме взятия мьютексов).
 		\item \textit{Любой} доступ к общим ресурсам должен быть \textit{защищён} (guarded) блокировкой.
+		\item В частности, любая переменная, доступная из нескольких потоков, должна быть защищена \textit{ровно} одной блокировкой (почему?).
 		\item Блокировки надо брать всегда в одном и том же порядке.
-		\item TODO
+		\item Если пишете потокобезопасный объект, блокировку надо брать на самой <<верхней>> операции, которая должна быть атомарной.
+		\item Дубовый способ переделки \textit{потоконебезопасной} структуры в безопасную: создать один мьютекс и брать его на каждую операцию со структурой.
+		\item Мьютексы сильно тормозят, лучше вообще избегать общего доступа к данным (и меньше шанс набагать).
 	\end{itemize}
-\end{frame}
-
-\begin{frame}{Иллюстрация}
-	
 \end{frame}
