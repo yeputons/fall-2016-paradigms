@@ -1,0 +1,56 @@
+\section{Домашнее задание}
+
+\begin{frame}{Общая идея}
+	\begin{itemize}
+		\item Вам надо реализовать Thread Pool (почти как в Java).
+		\item Это нечто, что хранит несколько потоков, готовых выполнять любые задачи, которые отправляют в thread pool.
+		\item Число потоков фиксируется при создании.
+		\item В пул можно отправлять задачи (функция + аргумент), они должны выполняться.
+		\item Задачи могут быть отправлены в любой момент (и когда есть свободный поток, и когда нет).
+		\item Задачи тоже могут отправлять задачи в поток (это не должно ни на что влиять).
+		\item Можно подождать завершения задачи (т.е. пока она начнёт и закончит выполняться).
+		\item После всего надо распараллелить quick sort при помощи thread pool.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Как всё хранится}
+	\begin{itemize}
+		\item Структуру \t{ThreadPool} вы целиком реализуете сами как хотите.
+		\item В структуре \t{Task} обязательно должно лежать описание задачи (функция + её аргумент).
+		\item Наверняка вам захочется добавить в \t{Task} что-то ещё, чтобы можно было ждать её завершения.
+		\item Память под структуры \t{ThreadPool} и \t{Task} выделяет тот, кто пользуется ThreadPool.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Пример использования}
+\begin{minted}{cpp}
+void foo(void* arg_) {
+    printf("got %d\n", arg_); free(arg_);
+}
+int main(void) {
+    ThreadPool pool;
+    thpool_init(&pool, 2);  // Создаём пул на два потока.
+    Task tasks[100];
+    for (int i = 0; i < 100; i++) {
+        tasks[i].f = foo;
+        int* arg = malloc(sizeof(int));
+        *arg = i; tasks[i].arg = arg;
+        thpool_submit(&pool, &tasks[i]);
+    }
+    thpool_finit(&pool);  // Ожидает все задачи.
+}
+\end{minted}
+\end{frame}
+
+\begin{frame}{Самые важные замечания}
+	\begin{itemize}
+		\item Не должно быть race condition и dead locks в любом виде.
+		\item Не должно быть утечек памяти.
+		\item Нельзя активно ждать событий в цикле, тратя процессорное время.
+		\item Thread Pool должен быть независим от реализации quick sort.
+		\item При увеличении числа потоков в thread pool сортировка должна становиться быстрее.
+		\item Выбирать средний элемент в quick sort можно как угодно.
+		\item Неасимптотические оптимизации quick sort не нужны.
+		\item Есть ещё куча замечаний в самом задании.
+	\end{itemize}
+\end{frame}
