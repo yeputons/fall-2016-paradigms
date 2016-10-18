@@ -98,29 +98,28 @@
 			\end{itemize}
 		\item
 			Порядок операций между разными потоками произвольный.
-			\begin{center}
-				\begin{tabular}{cc}
-					\begin{tabular}{l|c}
-						Операция & \t{data} \\ \hline
-						1: \t{read} $\to 10$ & 10 \\
-						1: \t{+1} $\to 11$ & 10 \\
-						1: \t{write(11)} & 11 \\
-						2: \t{read} $\to 11$ & 11 \\
-						2: \t{+1} $\to 12$ & 11 \\
-						2: \t{write(12)} & 12 \\
-					\end{tabular}
-					&
-					\begin{tabular}{l|c}
-						Операция & \t{data} \\ \hline
-						1: \t{read} $\to 10$ & 10 \\
-						1: \t{+1} $\to 11$ & 10 \\
-						2: \t{read} $\to 10$ & 10 \\
-						2: \t{+1} $\to 11$ & 10 \\
-						1: \t{write(11)} & 11 \\
-						2: \t{write(11)} & 11 \\
-					\end{tabular}
+			\begin{tabular}{cc}
+				\centering
+				\begin{tabular}{l|c}
+					Операция & \t{data} \\ \hline
+					1: \t{read} $\to 10$ & 10 \\
+					1: \t{+1} $\to 11$ & 10 \\
+					1: \t{write(11)} & 11 \\
+					2: \t{read} $\to 11$ & 11 \\
+					2: \t{+1} $\to 12$ & 11 \\
+					2: \t{write(12)} & 12 \\
 				\end{tabular}
-			\end{center}
+				&
+				\begin{tabular}{l|c}
+					Операция & \t{data} \\ \hline
+					1: \t{read} $\to 10$ & 10 \\
+					1: \t{+1} $\to 11$ & 10 \\
+					2: \t{read} $\to 10$ & 10 \\
+					2: \t{+1} $\to 11$ & 10 \\
+					1: \t{write(11)} & 11 \\
+					2: \t{write(11)} & 11 \\
+				\end{tabular}
+			\end{tabular}
 	\end{enumerate}
 \end{frame}
 

@@ -68,23 +68,22 @@ void* worker(void* arg __attribute__((unused))) {
 
 \begin{frame}[fragile]{Reordering}
 	Эквивалентны ли два куска кода?
-	\begin{center}
-		\begin{tabular}{p{0.4\textwidth}p{0.4\textwidth}}
+	\begin{tabular}{p{0.4\textwidth}p{0.4\textwidth}}
+		\centering
 \begin{minted}{cpp}
 int data, finished;
 // ...
 data = 123;
 finished = 1;
 \end{minted}
-			&
+&
 \begin{minted}{cpp}
 int data, finished;
 // ...
 finished = 1;
 data = 123;
 \end{minted}
-		\end{tabular}
-	\end{center}
+	\end{tabular}
 	\pause
 	\begin{itemize}
 		\item Эквивалентны. Оптимизатор тоже так считает.
