@@ -78,7 +78,13 @@ data is 1244
 	\end{itemize}
 \end{frame}
 
-\begin{frame}{Несколько замечания про pthread}
+\begin{frame}[t]{Иллюстрация}
+	\begin{center}
+		\includegraphics[scale=0.5]{no-werror-meme.jpg}
+	\end{center}
+\end{frame}
+
+\begin{frame}[t]{Несколько замечаний про pthread}
 	Про потоки и pthread:
 	\begin{itemize}
 		\item Использовать \t{void* arg} и возвращаемое значение для передачи данных необязательно.
@@ -126,7 +132,7 @@ data is 1244
 		\item Вызовите \t{pthread\_detach} на втором потоке после запуска.
 		\item Убедитесь, что программа упала.
 		\item Уберите вызов \t{pthread\_join}.
-		\item Удивитесь странному порядку символов в выводе.
+		\item Удивитесь странному порядку символов в выводе и уберите \t{printf} из основного потока.
 		\item Убедитесь, что второй поток не всегда успевает отработать.
 		\item Добавьте вызов \t{pthread\_exit} в \t{main}.
 		\item Убедитесь, что после приложение перестало закрываться до окончания работы всех потоков.
@@ -134,4 +140,3 @@ data is 1244
 	\pause
 	\href{https://github.com/yeputons/fall-2016-paradigms/raw/master/161019/sources/02-detached.c}{Код}
 \end{frame}
-`
