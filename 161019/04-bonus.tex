@@ -1,0 +1,123 @@
+\section{Бонус}
+
+\begin{frame}
+	\tableofcontents[currentsection,currentsubsection]
+\end{frame}
+
+\begin{frame}{Стандартные паттерны-1}
+	\begin{itemize}
+		\item
+			\textbf{Пул потоков} (thread pool):
+			\begin{itemize}
+				\item Создание потоков на короткие задачи "--- это очень неэффективно.
+				\item Поддерживается пул из некоторого числа потоков (примерно по числу ядер).
+				\item Задачу можно отправить в пул, она выполнится в одном из потоков, когда тот освободится.
+				\item Ограничивает число одновременно выполняющихся задач.
+			\end{itemize}
+		\item
+			\textbf{Блокировка чтения-записи} (readers-writer lock)
+			\begin{itemize}
+				\item Как мьютекс, но позволяет потоку указать режим доступа: <<чтение>> или <<запись>>.
+				\item Читателей может быть сколько угодно.
+				\item Если кто-то пишет, то другие потоки ждут.
+				\item Ускоряет доступ к редко меняющимся данным.
+			\end{itemize}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Стандартные паттерны-2}
+	\begin{itemize}
+		\item
+			\textbf{Акторы} (actors)
+			\begin{itemize}
+				\item Небольшие потоки, не имеющие общих ресурсов.
+				\item Для обмена информацией посылают друг другу неизменяемые \textit{сообщения}.
+				\item Вся синхронизация сконцентрирована в системе обмена сообщениями.
+			\end{itemize}
+		\item
+			\textbf{Неблокирующие} (lock-free) структуры данных
+			\begin{itemize}
+				\item Работают поверх атомарных операций и моделей памяти.
+				\item Не требуют блокировок или мьютексов.
+				\item Работают быстрее, так как многие операции атомарны в железе и не требуют вмешательства ОС.
+			\end{itemize}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Как отлаживать}
+	\begin{center}
+		\includegraphics[scale=0.2]{apple-a-day.jpg}
+		\pause
+
+		An apple a day keeps the doctor away.
+
+		Лучше предотвращать, чем отлаживать.
+	\end{center}
+\end{frame}
+
+\begin{frame}{Причина}
+	\begin{center}
+		\includegraphics[scale=0.2]{race-or-bug.jpg}
+	\end{center}
+	\begin{itemize}
+		\item Многопоточные баги обычно тесно связаны с порядком выполнения операций.
+		\item Операции выполняются в разном порядке каждый запуск, под отладчиком, в разном коде.
+		\item Очень сложно ловить баг <<за руку>>.
+		\item Корректная работа на куче тестов не означает отсутствие багов.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Как предотвращать}
+	\begin{itemize}
+		\item Явно расставляйте инварианты в комментариях: что чем защищено, в каком порядке захватывать мьютексы.
+		\item Нарисуйте на бумажке все возможные состояния системы и проверьте, что инварианты выполняются.
+		\item Минимизируйте количество мьютексов, если нет проблем со скоростью работы.
+		\item Не используйте для синхронизации ничего, кроме мьютексов (в частности, явных \t{sleep} в программе быть не должно).
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Как тестировать}
+	\begin{itemize}
+		\item Запускайте на больших тестах, в которых потоки работают медленно и часто происходит переключение.
+		\item
+			Если вы под 64-битным Linux "--- используйте thread sanitizer (добавьте ключи \t{-g -fsanitize=thread -O2 -fPIC -pie}).
+			Он хорош в нахождении некоторых гонок данных, \textit{происходящих во время выполнения}.
+		\item
+			Для аналогичных целей можно использовать Valgrind.
+		\item
+			На Windows можно поставить виртуальную машину.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Пример вывода Thread Sanitizer-1}
+	На \href{https://github.com/yeputons/fall-2016-paradigms/raw/master/161019/sources/08-two-threads.c}{примере с двумя счётчиками} находит гонку сразу,
+	во время первых выводов на экран:
+\begin{verbatim}
+==================
+WARNING: ThreadSanitizer: data race (pid=13170)
+  Read of size 4 at 0x7f31e00e12cc by thread T2:
+    #0 worker .../08-two-threads.c:10 (...)
+    #1 <null> <null>:0 (libtsan.so.0+0x000000032d69)
+
+  Previous write of size 4 at 0x7f31e00e12cc by thread T1:
+    #0 worker .../08-two-threads.c:12 (...)
+    #1 <null> <null>:0 (libtsan.so.0+0x000000032d69)
+
+  Location is global 'data' of size 4 at ... (...)
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{Пример вывода Thread Sanitizer-2}
+	Также указывает, где были созданы соответствующие потоки:
+\begin{verbatim}
+  Thread T2 (tid=13173, running) created by main thread at:
+    #0 pthread_create <null>:0 (libtsan.so.0+0x000000047f23)
+    #1 main .../08-two-threads.c:20 (...)
+
+  Thread T1 (tid=13172, finished) created by main thread at:
+    #0 pthread_create <null>:0 (libtsan.so.0+0x000000047f23)
+    #1 main .../08-two-threads.c:19 (...)
+
+SUMMARY: ThreadSanitizer: data race .../08-two-threads.c:10
+\end{verbatim}
+\end{frame}
