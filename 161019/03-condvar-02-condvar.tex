@@ -144,9 +144,9 @@ bool some_condition; // GUARDED_BY(m)
 // ...
 pthread_mutex_lock(&m);
 while (!some_condition) {
-  // Атомарно снимает мьютекс и начинает ожидание
-  pthread_cond_wait(&cond, &m);
-  // После выхода из cond_wait мьютекс снова захвачен.
+    // Атомарно снимает мьютекс и начинает ожидание
+    pthread_cond_wait(&cond, &m);
+    // После выхода из cond_wait мьютекс снова захвачен.
 }
 pthread_mutex_unlock(&m);
 \end{minted}
