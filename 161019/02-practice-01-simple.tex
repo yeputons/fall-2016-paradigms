@@ -57,7 +57,7 @@ int main(void) {
 \begin{frame}[fragile]{Упражнение: сборка кода}
 	\begin{enumerate}
 		\item Качаем решение с \href{https://github.com/yeputons/fall-2016-paradigms/raw/master/161019/sources/01-simple.c}{GitHub}.
-		\item \texttt{gcc 01-simple.c -o 01-simple -Wall -Wextra -Werror} или аналог в вашей IDE.
+		\item \texttt{gcc 01-simple.c -o 01-simple -std=gnu99 -Wall -Wextra -Werror -pthread} или аналог в вашей IDE.
 		\item \texttt{./01-simple}
 		\item Ожидаемый вывод:
 \begin{verbatim}

@@ -5,7 +5,7 @@ APPS=$(sort $(basename $(wildcard *.c)))
 all: $(APPS)
 
 %: %.c
-	gcc $^ -o $@ -std=c99 -Wall -Wextra -Werror -pthread
+	gcc $^ -o $@ -std=gnu99 -Wall -Wextra -Werror -pthread
 
 clean:
 	rm $(APPS) >/dev/null 2>&1 || true
