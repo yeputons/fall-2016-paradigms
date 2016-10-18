@@ -1,0 +1,74 @@
+\subsection{Состояние гонки}
+
+\begin{frame}
+	\tableofcontents[currentsection,currentsubsection]
+\end{frame}
+
+\begin{frame}{Упражнение}
+	\begin{itemize}
+		\item Возьмите \href{https://github.com/yeputons/fall-2016-paradigms/raw/master/161019/sources/01-simple.c}{самый первый код}.
+		\item При желании можете скачать \href{https://github.com/yeputons/fall-2016-paradigms/raw/master/161019/sources/Makefile}{Makefile}.
+		\item Переместите \t{printf} сразу после \t{pthread\_create}.
+		\item Удивитесь.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Упражнение}
+		\item Сделайте счётчик:
+			\begin{itemize}
+				\item Поток в цикле увеличивает переменную \t{data} до $N = 5 \cdot 10^8$.
+				\item Основной поток (\t{main}) выводит на экран текущее значение \t{data} в цикле $M = 1000$ раз.
+				\item Отключите оптимизации компилятора (ключ \t{-O2} или схожий не нужен).
+			\end{itemize}
+		\item Убедитесь, что программа выводит на экране увеличивающиеся значения, а в конце "--- $N$.
+		\item Поиграйте со значением $M$, чтобы убедиться, что в конце всегда выводится $N$.
+		\item Сделайте так, чтобы основной поток выводил на экран только чётные значения \t{data}.
+		\item Что теперь происходит?
+	\end{enumerate}
+	\pause
+	Мой код:
+	\href{https://github.com/yeputons/fall-2016-paradigms/raw/master/161019/sources/02-counter.c}{счётчик},
+	\href{https://github.com/yeputons/fall-2016-paradigms/raw/master/161019/sources/03-event-counter.c}{чётный счётчик}.
+\end{frame}
+
+\begin{frame}{Объяснение}
+	\begin{enumerate}
+		\item На уровне железа \t{a++} происходит так:
+			\begin{itemize}
+				\item Считай значение \t{a} из памяти.
+				\item Прибавь единицу.
+				\item Положи \t{a+1} на то же место в памяти.
+			\end{itemize}
+		\pause
+		\item
+			Порядок операций между разными потоками произвольный.
+			\pause
+			\begin{center}
+				\begin{tabular}{cc}
+					\begin{tabular}{c|cc}
+						Поток 1 & Поток 2 & \t{a} \\ \hline
+						$\t{read} \to 10$ & & 10 \\
+						$\t{+1} \to 11$ & & 10 \\
+						$\t{write(11)}$ & & 11 \\
+						& $\t{read} \to 11$ & 11 \\
+						& $\t{+1} \to 12$ & 11 \\
+						& $\t{write(12)}$ & 12 \\
+					\end{tabular}
+					&
+					\begin{tabular}{c|cc}
+						Поток 1 & Поток 2 & \t{a} \\ \hline
+						$\t{read} \to 10$ & & 10 \\
+						& $\t{read} \to 10$ & 10\\
+						$\t{+1} \to 11$ & & 10 \\
+						& $\t{+1} \to 11$ & 10 \\
+						$\t{write(11)}$ & & 11 \\
+						& $\t{write(11)}$ & 11 \\
+					\end{tabular}
+				\end{tabular}
+			\end{center}
+		\item
+			\textit{Состояние гонки} (\textit{race condition}) "--- это когда результат работы зависит от того, в каком порядке потоки выполняли команды.
+		\item
+			Самая популярная ошибка у начинающих.
+	\end{enumerate}
+\end{frame}
