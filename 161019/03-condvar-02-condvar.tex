@@ -151,3 +151,79 @@ while (!some_condition) {
 pthread_mutex_unlock(&m);
 \end{minted}
 \end{frame}
+
+\begin{frame}{Упражнение}
+	\begin{enumerate}
+		\item Возьмите реализацию с producer-consumer с \href{https://github.com/yeputons/fall-2016-paradigms/raw/master/161019/sources/14-prod-cons.c}{GitHub}.
+		\item Запустите и убедитесь, что на каждую введённую строчу отзывается второй поток: сначала сразу, а потом через две секунды.
+		\item Убедитесь, что если во время ожидания второго потока ввести новую строчку, то на неё второй поток тоже среагирует.
+		\item Убедитесь, что если во время ожидания ввести две новых строчки, то будет обработана только последняя.
+		\item Задайте все вопросы по коду; поймите, зачем нужна и что делает каждая строчка.
+		\item Есть ли проблемы в этом коде?
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}{Конечно, есть!}
+	\begin{center}
+		\includegraphics[scale=0.4]{multithreading-aliens.jpg}
+	\end{center}
+\end{frame}
+
+\begin{frame}[t,fragile]{Проблема}
+	Вот тут возникает race condition:
+\begin{minted}{cpp}
+while (true) {
+    fgets(str, sizeof str, stdin);
+    pthread_mutex_lock(&m);
+    str_available = true;
+    pthread_cond_signal(&cond);
+    pthread_mutex_unlock(&m);
+}
+\end{minted}
+	\pause
+	\begin{itemize}
+		\item \t{fgets} меняет буфер, который также читается из другого потока.
+		\item Значит, буфер должен быть защищён мьютексом на всех стадиях.
+		\item Если поменяем \t{fgets} и \t{pthraed\_mutex\_lock} местами, то\only<1>{...}\only<2->{ будет deadlock: consumer не может читать данные, пока producer ждёт.}
+		\only<3->{
+		\item
+			Правильно сначала считать в локальную переменную, а потом скопировать в буфер.
+			\href{https://github.com/yeputons/fall-2016-paradigms/raw/master/161019/sources/15-prod-cons-fixed.c}{Код}.
+		}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Резюме}
+	\begin{itemize}
+		\item Условные переменные нужны там и только там, где поток ждёт некоторое условие.
+		\item А это условие всегда защищено ровно одним мьютексом (почему?)
+		\item Соответственно, условная переменная тоже защищена ровно одним мьютексом.
+		\item Условие всегда надо проверять в цикле.
+		\item
+			\t{pthread\_cond\_wait} "--- это лишь оптимизация.
+			Если её убрать, программа должна остаться корректной.
+		\item
+			Никакого внутреннего состояния у условной переменной нет,
+			из-за этого она просто реализуется в ОС, но программисту
+			надо самому явно формулировать условие, которого ждёт поток.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Необязательное упражнение на дом}
+	Реализуйте Windows Event через conditional variable:
+	\begin{itemize}
+		\item Объект <<событие>> с методами \t{wait} и \t{notify}.
+		\item В каждый момент не более одного потока ждёт (\t{wait}).
+		\item Метод \t{notify} либо пробуждает ждущий поток, либо делает так, что следующий метод \t{wait} мгновенно завершится.
+	\end{itemize}
+	Можно создать отдельную папку в репозитории и прислать код на проверку (в теме "--- \t{[add-161019]}).
+
+	Сигнатура:
+	\begin{itemize}
+		\item \t{typedef ... event\_t;}
+		\item \t{event\_init(event\_t*)}
+		\item \t{event\_wait(event\_t*)}
+		\item \t{event\_notify(event\_t*)}
+		\item \t{event\_destroy(event\_t*)}
+	\end{itemize}
+\end{frame}
