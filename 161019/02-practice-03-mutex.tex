@@ -136,7 +136,7 @@ void inc() {  // Атомарна.
     m.lock(); data++; m.unlock();
 }
 void double_inc() {  // Атомарно?
-    m.lock(); inc(); inc(); n.unlock();
+    m.lock(); inc(); inc(); m.unlock();
 }
 \end{minted}
 	\begin{itemize}
@@ -186,7 +186,7 @@ void inc_special() {
 \begin{minted}{cpp}
 void inc_special() {
     ScopedLock lock(m);  // Берём блокировку в конструкторе
-    if (conditoin()) return;
+    if (condition()) return;
     data++;
 }  // Освобождаем в деструкторе.
 \end{minted}

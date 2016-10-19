@@ -62,6 +62,7 @@ while (true) {
 
 \begin{frame}{Проблемы}
 	\begin{itemize}
+		\item Если несколько COnsumer'ов, то есть race condition.
 		\item Consumer активно ждёт событие от первого и тратит процессорное время.
 		\item Даже если ничего не происходит, программа потребляет 100\% CPU.
 		\item Consumer постоянно берёт и отпускает mutex, мешая producer'у.
