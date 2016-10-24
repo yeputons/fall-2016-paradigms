@@ -1,0 +1,84 @@
+\subsection{Жизнь без переменных}
+
+\begin{frame}{Haskell}
+	\begin{itemize}
+		\item Haskell "--- чистый функциональный язык программирования.
+		\item Компилируемый, статически типизирован, \textit{очень} мощная система типов.
+		\item Есть огромное число библиотек.
+		\item Очень чистый по сравнению с остальными языками вроде OCaml.
+		\item Помимо функциональной чистоты имеет огромное количество интересных особенностей.
+		\item На нём действительно можно писать код.
+		\item Стандартный компилятор "--- GHC (Glasgow Haskell Compiler).
+		\item Рекомендуется использовать в составе \href{https://www.haskell.org/platform/}{Haskell Platform}.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Демонстрация}
+	\begin{enumerate}
+		\item Интерпретатор \t{ghci} не поддерживает многострочные определения функций.
+		\item Поэтому с некоторого момента лучше набирать код в файле, подгружая его в интерпретатор:
+			\begin{itemize}
+				\item \t{:load file.hs} (\t{:l file.hs}) компилирует \t{file.hs} и подгружает определения в интерпретатор.
+				\item \t{:reload} перекомпилирует и переподключит все файлы.
+			\end{itemize}
+		\item Демо: арифметика, простые типы, сравнения, функции, комментарии, списки, работа со списками, list comprehension.
+		\item Упражнение: как найти все Пифагоровы тройки ($x^2 + y^2 = z^2$) при $1 \le x, y, z \le 10$?
+		\item Демо: определения функций <<и>>, <<или>>, <<сумма двух чисел>>.
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}[t]{Жизнь без циклов}
+	Упражнения на Python:
+	\begin{itemize}
+		\item Как посчитать сумму чисел в списке, если нет переменных и циклов?\pause Функция \t{sum}.\pause
+		\item Как посчитать сумму квадратов чисел? \pause Определить лямбда-функцию для возведения в квадрат и применить \t{map} с \t{sum}.\pause
+		\item Какие вообще операции со списками мы ещё не умеем делать без циклов? \pause В которых элементы влияют друг на друга.
+		\item Например: \t{"hello world".split()}.
+		\item Тогда функцию \t{split()} пишут <<императивно>>, а всю последующую обработку "--- функционально.
+		\item Таким образом императивная сложность изолирована, все кусочки можно тестировать по отдельности.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[t,fragile]{Упражнения на рекурсию}
+	Факториал:
+\begin{minted}{haskell}
+fac 0 = 1
+fac n = n * fac (n - 1)
+\end{minted}
+	Степень двойки: \pause
+\begin{minted}{haskell}
+powerOfTwo 0 = 1
+powerOfTwo n = 2 * powerOfTwo (n - 1)
+\end{minted}
+	Числа Фибоначчи: \pause
+\begin{minted}{haskell}
+fib n = fib' 0 1 n
+-- Одна итерация цикла for
+fib' a b 0 = a
+fib' a b n = fib' b (a + b) (n - 1)
+\end{minted}
+	Мы увидели:
+	\begin{itemize}
+		\item Pattern matching (вместо \t{if} пишем <<шаблон>> для аргумента функции).
+		\item Апостроф является корректным символом в названии функции.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[t,fragile]{Жизнь без циклов-2}
+	Как теперь функцию \t{sum}? \pause
+\begin{minted}{haskell}
+sum' (x:xs) = x + sum xs
+sum' _ = 0
+\end{minted}
+	\begin{itemize}
+		\item Иногда можно делать сложный pattern matching вроде \t{x:xs} (список, первый элемент которого "--- \t{x}, а хвост "--- \t{xs}).
+		\item Шаблоны проверяются сверху вниз.
+		\item Вместо имени переменной можно написать \t{\_}.
+	\end{itemize}
+	А как написать в императивном стиле? \pause
+\begin{minted}{haskell}
+sum' xs = sum'' 0 xs
+sum'' a [] = a
+sum'' a (x:xs) = sum'' (a + x) xs
+\end{minted}
+\end{frame}
