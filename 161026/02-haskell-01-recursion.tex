@@ -1,0 +1,43 @@
+\begin{frame}[t,fragile]{Упражнения на рекурсию}
+	Факториал:
+\begin{minted}{haskell}
+fac 0 = 1
+fac n = n * fac (n - 1)
+\end{minted}
+	Степень двойки: \pause
+\begin{minted}{haskell}
+powerOfTwo 0 = 1
+powerOfTwo n = 2 * powerOfTwo (n - 1)
+\end{minted}
+	Числа Фибоначчи: \pause
+\begin{minted}{haskell}
+fib n = fib' 0 1 n
+-- Одна итерация цикла for
+fib' a b 0 = a
+fib' a b n = fib' b (a + b) (n - 1)
+\end{minted}
+	Мы увидели:
+	\begin{itemize}
+		\item Pattern matching (вместо \t{if} пишем <<шаблон>> для аргумента функции).
+		\item Апостроф является корректным символом в названии функции.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[t,fragile]{Жизнь без циклов-2}
+	Как теперь функцию \t{sum}? \pause
+\begin{minted}{haskell}
+sum' (x:xs) = x + sum xs
+sum' _ = 0
+\end{minted}
+	\begin{itemize}
+		\item Иногда можно делать сложный pattern matching вроде \t{x:xs} (список, первый элемент которого "--- \t{x}, а хвост "--- \t{xs}).
+		\item Шаблоны проверяются сверху вниз.
+		\item Вместо имени переменной можно написать \t{\_}.
+	\end{itemize}
+	А как написать в императивном стиле? \pause
+\begin{minted}{haskell}
+sum' xs = sum'' 0 xs
+sum'' a [] = a
+sum'' a (x:xs) = sum'' (a + x) xs
+\end{minted}
+\end{frame}
