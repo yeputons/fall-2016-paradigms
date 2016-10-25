@@ -116,7 +116,8 @@ sum' xs = sum'' 0 xs
 \begin{minted}{python}
 def foo(xs):
     res = []
-    if not xs: return
+    if not xs:
+        return
     res.append(xs[0])
     for x in xs[1:]:
         if res[-1] != x:
@@ -161,13 +162,13 @@ uniq (x:xs) = x:(uniq' x xs)
 \begin{frame}[fragile]{Золотые горы}
 	% 02-07-uniq-func.hs
 \begin{minted}{haskell}
-uniq (x:xs) = x:(uniq xs')
-    where xs' = dropWhile (== x) xs
+uniq (x:xs) = x:(uniq (dropWhile (== x) xs))
 uniq _ = []
 \end{minted}
 	\begin{itemize}
-		\item Язык предоставляет много функций для работы со списками, пользуемся!
-		\item Функции довольно общие "--- \t{dropWhile}, \t{filter}, \t{map}...
+		\item В функциональном стиле протаскивать состояние довольно неудобно.
+		\item Это нормально, так и надо "--- всё можно написать, комбинируя функции, язык нас просто к этом \textit{легонько} подталкивает.
+		\item Язык предоставляет много функций для работы \textit{и со списками тоже}, пользуемся!
 		\item Мы снова поднялись на уровень абстракции:
 			\begin{itemize}
 				\item Мы умеем комбинировать функции.
@@ -176,4 +177,86 @@ uniq _ = []
 				\item Опять пожертвовали контролем на уровень ниже: мы не знаем, как именно происходит комбинирование при компиляции.
 			\end{itemize}
 	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Играем в игру}
+	Задача: пусть есть массив $a_i$ длины $n$ и массив индексов $p_i$.
+	Мы хотим положить в $a_i$ значение $a_{p_i}$.
+	\begin{tabular}{m{0.45\linewidth}m{0.45\linewidth}}
+		\centering
+		Пример & Решение \\
+		\centering
+		$
+			\begin{array}{c|c|c|c|c|c}
+				i & 0 & 1 & 2 & 3 & 4 \\\hline
+				a_i & 10 & 11 & 10 & 12 & 9 \\
+				p_i & 2 & 0 & 0 & 4 & 4 \\
+				a_{p_i} & 10 & 10 & 10 & 9 & 9
+			\end{array}
+		$
+		&
+		% 02-08-perm.py
+\begin{minted}{python}
+for i in range(len(a)):
+    a[i] = a[p[i]]
+\end{minted}
+		\vfill
+	\end{tabular}
+	Есть ли проблемы?
+	\pause
+	\begin{itemize}
+		\item Да, потому что массив меняется в процессе.
+		\item Если $p_i < i$, то справа может получиться неверное значение.
+		\item В примере нам повезло, потому что $a_{p_2}=a_0=a_{p_0}=a_2$.
+		\item Другой классический пример: merge sort.
+	\end{itemize}
+	Мораль: наличие состояния может не только быть неочевидно и вредить, но только на каких-то примерах.
+\end{frame}
+
+\begin{frame}[fragile]{Функциональное решение}
+	\begin{itemize}
+		\item Как ни странно, есть оператор получения элемента списка по номеру:
+\begin{minted}{haskell}
+[10, 11, 12, 13, 14] !! 2  -- 12
+\end{minted}
+		\item Получаем решение:
+\begin{minted}{haskell}
+permute a p = map (a !!) p
+\end{minted}
+		\item \textbf{Одна} строка.
+		\item Но для чтения надо знать, что такое \t{map}
+		\item Также надо знать частичное применение оператора \t{!!}.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Резюме}
+	\begin{itemize}
+		\item Программа на функциональных языках представляет собой комбинацию каких-то стандартных функций в нужном порядке.
+		\item Обычно читается хорошо, если знать названия этих функций.
+		\item Называется очень похоже в разных языках.
+		\item Код на функциональных языках получается довольно короткий и плотный.
+		\item Написать нечитаемо тоже можно:
+\begin{minted}{haskell}
+filter (\x -> 1 == sum (map (
+    \y -> 1 - min 1 (abs (x - y))) xs)) xs
+\end{minted}
+		\item Не забываем про декларативный list comprehension и введение вспомогательных функций при помощи \t{where}!
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Приятные бонусы}
+	\begin{itemize}
+		\item Язык заставляет вас понимать инварианты.
+		\item Практически не используются ветвления и циклы.
+		\item Проще доказывать корректность.
+		\item Сложнее допустить скрытый баг.
+		\item Активно используются абстракции, в том числе из математики (<<моноид>> легко может всплыть).
+		\item ФП легко встраивается в императивные языки и получаем лучшее двух миров.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\begin{center}
+		\includegraphics[scale=0.3]{twispicord-haskell.png}
+	\end{center}
 \end{frame}
