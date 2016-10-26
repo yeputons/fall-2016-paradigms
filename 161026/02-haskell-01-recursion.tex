@@ -55,12 +55,12 @@ fac n = if n == 0
 fac 0 = 1
 fac n = n * fac (n - 1)
 -- If
-fac_two n = if n <= 1
-            then 1
-            else n * fac_two (n - 2)
+facTwo n = if n <= 1
+           then 1
+           else n * facTwo (n - 2)
 -- Guards
-fac_two n | n <= 1    = 1
-          | otherwise = n * fac (n - 2)
+facTwo n | n <= 1    = 1
+         | otherwise = n * fac (n - 2)
 \end{minted}
 \end{frame}
 
