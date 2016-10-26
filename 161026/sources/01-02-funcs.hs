@@ -13,7 +13,9 @@ or' True _    = True
 or' _    True = True
 or' _    _    = False
 
-add' a b = a + b
-add'' a b = (+) a b
-add'' = (+)
 
+add' a b = a + b
+
+add'' a b = (+) a b
+
+add''' = (+)

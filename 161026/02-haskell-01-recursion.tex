@@ -27,7 +27,7 @@ powerOfTwo n = 2 *
 	Числа Фибоначчи: \pause
 \begin{minted}{haskell}
 fib n = fib' 0 1 n
-fib' f1 f2 0 = a
+fib' f1 f2 0 = f1
 fib' f1 f2 n = fib' f2 (f1 + f2) (n - 1)
 \end{minted}
 	\begin{itemize}
@@ -68,7 +68,7 @@ facTwo n | n <= 1    = 1
 	Как теперь написать функцию \t{sum}? \pause
 	% 02-04-sum1.hs
 \begin{minted}{haskell}
-sum' (x:xs) = x + sum xs
+sum' (x:xs) = x + sum' xs
 sum' _ = 0
 \end{minted}
 	\begin{itemize}

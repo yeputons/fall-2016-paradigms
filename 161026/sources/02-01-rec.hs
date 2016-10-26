@@ -6,5 +6,5 @@ powerOfTwo n = 2 *
     powerOfTwo (n - 1)
 
 fib n = fib' 0 1 n
-fib' a b 0 = a  -- Одна итерация цикла for
-fib' a b n = fib' b (a + b) (n - 1)
+fib' f1 f2 0 = f1  -- Одна итерация цикла for
+fib' f1 f2 n = fib' f2 (f1 + f2) (n - 1)

@@ -19,10 +19,10 @@
 sum (x:xs) = x + sum xs
 sum _ = 0
 
-prod (x:xs) = x * sum xs
+prod (x:xs) = x * prod xs
 prod _ = 1
 
-max (x:xs) = max x (sum xs)
+max (x:xs) = max x (max xs)
 max x = -1
 
 concat (x:xs) = x ++ (concat xs)
