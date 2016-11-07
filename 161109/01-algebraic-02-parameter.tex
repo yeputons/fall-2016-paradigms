@@ -1,0 +1,57 @@
+\begin{frame}[fragile]{MaybeInt}
+	Поиск элемента по номеру:
+\begin{minted}{haskell}
+data CharOrNotFound = NotFound | Found Char deriving Show
+getItem :: [Char] -> Int -> CharOrNotFound
+getItem (x:_ ) 0         = Found x
+getItem (x:xs) n | n > 0 = getItem xs (n - 1)
+getItem _      _         = NotFound
+\end{minted}
+	\begin{itemize}
+		\item Не требуются <<магические значения>> для ситуации <<элемент не найден>>.
+		\item Компилятор проверяют, что мы всегда обрабатываем оба случая.
+		\item По типу функции сразу понятно, что она может вернуть.
+		\item Нет исключений; функции чистые.
+	\end{itemize}	
+\end{frame}
+
+\begin{frame}[fragile]{Maybe}
+	Можно обобщить:
+\begin{minted}{haskell}
+data GetResult a = NotFound | Found a deriving Show
+getItem :: [a] -> Int -> GetResult a
+getItem (x:_ ) 0         = Found x
+getItem (x:xs) n | n > 0 = getItem xs (n - 1)
+getItem _ _              = NotFound
+\end{minted}
+% Показать :t getItem, :t getItem "123" 1
+	\begin{itemize}
+		\item \t{GetResult} "--- это не тип, это \textit{конструктор типа}.
+		\item \t{a} "--- единственный параметр этого конструктора.
+		\item А вот \t{GetResult Char} "--- уже конкретный тип:
+\begin{minted}{haskell}
+data GetResult Char = NotFound | Found Char
+\end{minted}
+		\item В Haskell такой тип называется \t{Maybe}:
+		\item Ещё может называться Optional (например, в Java есть \t{Optional<>}).
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[t,fragile]{Упражнение}
+	\begin{itemize}
+		\item Напишите тип для функции \t{getItem}, если бы она использовала \t{Maybe}:
+\begin{minted}{haskell}
+data Maybe a = Nothing | Just a
+getItem :: [a] -> Int -> ???
+\end{minted}
+		\item Напишите функцию \t{getItem}.
+		\item Удалите явное указание типа, проверьте, какой тип вывелcя автоматически (\t{:t getItem} в GHCI).
+	\end{itemize}
+	\pause
+\begin{minted}{haskell}
+getItem :: [a] -> Int -> Maybe a
+getItem (x:_)  0         = Just x
+getItem (x:xs) n | n > 0 = getItem xs (n - 1)
+getItem _ _              = Nothing
+\end{minted}
+\end{frame}
