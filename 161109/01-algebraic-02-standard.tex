@@ -22,7 +22,7 @@ getItem _      _         = NotFound
 
 
 \begin{frame}[fragile]{Maybe}
-	Можно обобщить:
+	Можно обобщить до \textit{параметризованного типа}:
 \begin{minted}{haskell}
 data GetResult a = NotFound | Found a deriving Show
 getItem :: [a] -> Int -> GetResult a
@@ -38,8 +38,8 @@ getItem _ _              = NotFound
 \begin{minted}{haskell}
 data GetResult Char = NotFound | Found Char
 \end{minted}
-		\item В Haskell такой тип называется \t{Maybe}:
-		\item Ещё может называться Optional (например, в Java есть \t{Optional<>}).
+		\item В Haskell такой тип называется \t{Maybe}.
+		\item А в Java есть generic-тип \t{Optional<>}).
 	\end{itemize}
 \end{frame}
 
@@ -62,7 +62,7 @@ getItem _ _              = Nothing
 \end{minted}
 \end{frame}
 
-\begin{frame}{Either}
+\begin{frame}[fragile]{Either}
 	На случай, если хотим сообщить об ошибке:
 \begin{minted}{haskell}
 data Either a b = Left a | Right b
@@ -75,5 +75,153 @@ parseBool x       = Left ("Invalid value: " ++ x)
 	\begin{itemize}
 		\item Обычно за \t{Right} принимает успешное вычисление (<<правильный>> результат).
 		\item А за \t{Left} "--- сообщение об ошибке (<<левый>> результат).
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Двоичная куча}
+\begin{minted}{haskell}
+data Heap = Nil | Node Int Heap Heap
+Heap 1 (Node 2 (Node 5 (Node 6 Nil Nil) Nil)
+               (Node 4 Nil Nil))
+       (Node 3 Nil Nil)
+\end{minted}
+	\begin{center}
+		\begin{dot2tex}[scale=0.5,options=-tmath]
+			graph G {
+			    1 {rank=same 2 3} {rank=same 5 4} { rank=same 6 x }
+			    1 -- {2 3};
+			    2 -- {5 4};
+			    5 -- 6;
+			    5 -- x [style=invis];
+			    x [style=invis];
+			}
+		\end{dot2tex}
+	\end{center}
+\end{frame}
+
+\begin{frame}[fragile]{Min-Max куча}
+	Так как вершина всегда хранит либо минимум, либо максимум, это можно указать прямо в типе.
+	Тогда точно не запутаемся, где какая вершина, и не надо это явно считать и передавать.
+\begin{minted}{haskell}
+data MinMaxHeap = Nil | MinNode Int MinMaxHeap 
+                      | MaxNode Int MinMaxHeap 
+\end{minted}
+	Можно даже строже:
+\begin{minted}{haskell}
+data MinMaxHeap = Nil1 | MinNode Int MaxMinHeap MaxMinHeap
+data MaxMinHeap = Nil2 | MaxNode Int MinMaxHeap MinMaxHeap
+\end{minted}	
+	К сожалению, назвать оба конструктора данных \t{Nil} нельзя.
+\end{frame}
+
+\begin{frame}[fragile]{Дерево разбора выражения}
+\begin{minted}{haskell}
+data BinOp = Add | Sub | Mul | Div deriving Show
+data Tree = Number Int
+          | Reference String
+          | BinaryOperation BinOp Tree Tree
+          deriving Show
+-- Глубокий pattern matching
+fold' Sub (Reference a) (Reference b) | a == b = Number 0
+fold' Mul (Reference _) (Number 0)             = Number 0
+fold' Mul (Number 0)    (Reference _)          = Number 0
+fold' op a b = BinaryOperation op a b
+-- Рекурсивное сворачивание выражений
+fold (BinaryOperation op a b) =
+    fold' op (fold a) (fold b)
+fold x = x
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{Односвязные списки}
+\begin{minted}{haskell}
+data List a = Empty | Cons a (List a) deriving Show
+head' (Cons x _ ) = x
+tail' (Cons _ xs) = xs
+\end{minted}
+	\begin{itemize}
+		\item Выше написано почти определение встроенного списка.
+		\item \t{[]} "--- это сахар для конструктора \t{Empty}.
+		\item \t{:} "--- это сахар для конструктора \t{Cons}.
+		\item Конкретно в Haskell любые структуры бывают бесконечными из-за ленивости, не только списки.
+		\item Например, бесконечное двоичное дерево имеет право на жизнь.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Упражнение}
+	\begin{enumerate}
+		\item Напишите тип <<двоичное дерево>> (\t{Tree}), в котором у каждой вершины либо 0 детей, либо 2, а каждая вершина содержит значение типа \t{a}.
+		\item Напишите функцию \t{tree\_sum}, которая считает сумму в данном ей дереве.
+		\item Удалите разбор какого-нибудь случая и запустите GHCI так: \t{ghci -W file.hs}
+		\item Убедитесь, что выпало предупреждение о неразобранном случае.
+		\item Напишите функцию, которая возвращает бесконечное дерево \t{Int}'ов, где каждая вершина содержит номер своего уровня.
+		\item Выведите результат на экран, объясните увиденное.
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}{Промежуточные итоги}
+	\begin{itemize}
+		\item
+			Под <<алгебраическими типами данных>> обычно подразумевают поддержку типов-сумм вместе с типами-произведениями \textit{на уровне языка}.
+			Такая поддержка даёт:
+			\begin{enumerate}
+				\item Более наглядные типы.
+				\item Невозможность обратиться к данным из другого <<случая>>.
+				\item Pattern matching и сильное упрощение кода.
+				\item Предупреждения компилятора о нерассмотренных случаях (ключ \t{-W} для GHC/GHCI).
+			\end{enumerate}
+		\item Добавлять случаи в тип-сумму обычно после объявления нельзя.
+		\item В языках без типов-сумм, но с ООП обычно используется:
+			\begin{itemize}
+				\item Наследование от общего предка вместо типов-сумм.
+				\item Visitor вместо pattern mactching.
+			\end{itemize}
+		\item Типы-суммы очень часто возникают при работе с AST.
+		\item В Haskell любой пользовательский тип является типом-суммой (возможно, из одного слагаемого).
+		\item В Haskell можно параметризовать пользовательские типы.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Замечания из алгебры-1}
+	\begin{itemize}
+		\item Любой вообразимый тип без стрелок (т.е. без функций) можно представить, как тип-сумму:
+\begin{minted}{haskell}
+data Bool = True | False
+data Int = 0 | 1 | -1 | 2 | -2 | ...
+data (Int, Int) = (0,0) | (0,1) | (1,0) | ...
+data [Int] = [] | [0] | [0,0] | [1] | ...
+\end{minted}
+		\item Когда мы пишем параметрирозованный тип, мы на самом деле пишем лишь его <<шаблон>> или функцию, которая возвращает <<реальный>> тип:
+			нельзя определить множество значений \t{Maybe a}, не зная множество значений \t{a}.
+		\item
+			Это называется <<тип высшего порядка>>.
+			Этакие шаблоны из C++/generic'и из Java.
+			Они нам в курсе больше не потребуются.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Замечания из алгебры-2}
+	\begin{itemize}
+		\item
+			Если заменить каждый тип на количество возможных значений, то названия <<тип-сумма>> и <<тип-произведение>> отображают
+			операции, которые надо производить с этими количествами:
+\begin{minted}{haskell}
+data Bool = True | False  -- Два значения
+data Foo = Bool | (Bool, Bool) -- 2 + 2 * 2 = 6 значений
+\end{minted}
+		\item
+			В типах тоже есть дистрибутивность умножения и сложения:
+\begin{minted}{haskell}
+-- Названия конструктора данных и типа могут совпадать
+data Foo1 = Foo1 (Bool, Maybe Int)
+data Foo2 = FalseNoInt
+          | FalseWithInt Int
+          | TrueNoInt
+          | TrueWithInt Int
+\end{minted}
+		\item Enum'ы (перечисления) "--- это типы-суммы, в которых каждое слагаемое имеет ровно одно значение:
+\begin{minted}{haskell}
+data BinOp = Add | Sub | Mul | Div
+\end{minted}
 	\end{itemize}
 \end{frame}
