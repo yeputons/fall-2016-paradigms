@@ -1,4 +1,9 @@
-\begin{frame}[fragile]{MaybeInt}
+\subsection{Примеры типов-сумм}
+\begin{frame}
+	\tableofcontents[currentsection,currentsubsection]
+\end{frame}
+
+\begin{frame}[fragile]{CharOrNotFound}
 	Поиск элемента по номеру:
 \begin{minted}{haskell}
 data CharOrNotFound = NotFound | Found Char deriving Show
@@ -14,6 +19,7 @@ getItem _      _         = NotFound
 		\item Нет исключений; функции чистые.
 	\end{itemize}	
 \end{frame}
+
 
 \begin{frame}[fragile]{Maybe}
 	Можно обобщить:
@@ -54,4 +60,20 @@ getItem (x:_)  0         = Just x
 getItem (x:xs) n | n > 0 = getItem xs (n - 1)
 getItem _ _              = Nothing
 \end{minted}
+\end{frame}
+
+\begin{frame}{Either}
+	На случай, если хотим сообщить об ошибке:
+\begin{minted}{haskell}
+data Either a b = Left a | Right b
+OrError x = Either String x
+parseBool :: String -> Either String Bool
+parseBool "true"  = Right True
+parseBool "false" = Right False
+parseBool x       = Left ("Invalid value: " ++ x)
+\end{minted}
+	\begin{itemize}
+		\item Обычно за \t{Right} принимает успешное вычисление (<<правильный>> результат).
+		\item А за \t{Left} "--- сообщение об ошибке (<<левый>> результат).
+	\end{itemize}
 \end{frame}
