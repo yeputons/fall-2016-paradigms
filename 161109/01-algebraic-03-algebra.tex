@@ -1,0 +1,49 @@
+\subsection{Замечания из алгебры}
+\begin{frame}
+	\tableofcontents[currentsection,currentsubsection]
+\end{frame}
+
+\begin{frame}[fragile]{Мощь типов-сумм}
+	\begin{itemize}
+		\item Любой вообразимый тип без стрелок (т.е. без функций) можно представить, как тип-сумму:
+\begin{minted}{haskell}
+data Bool = True | False
+data Int = 0 | 1 | -1 | 2 | -2 | ...
+data (Int, Int) = (0,0) | (0,1) | (1,0) | ...
+data [Int] = [] | [0] | [0,0] | [1] | ...
+\end{minted}
+		\item Когда мы пишем параметрирозованный тип, мы на самом деле пишем лишь его <<шаблон>> или функцию, которая возвращает <<реальный>> тип:
+			нельзя определить множество значений \t{Maybe a}, не зная множество значений \t{a}.
+		\item
+			Это называется <<тип высшего порядка>>.
+			Этакие шаблоны из C++/generic'и из Java.
+		\item
+			Отсюда возникло название <<\textit{конструктор типа}>>.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Количество значений}
+	\begin{itemize}
+		\item
+			Если заменить каждый тип на количество возможных значений, то названия <<тип-сумма>> и <<тип-произведение>> отображают
+			операции, которые надо производить с этими количествами:
+\begin{minted}{haskell}
+data Bool = True | False  -- Два значения
+data Foo = Bool | (Bool, Bool) -- 2 + 2 * 2 = 6 значений
+\end{minted}
+		\item
+			В типах тоже есть дистрибутивность умножения и сложения:
+\begin{minted}{haskell}
+-- Названия конструктора данных и типа могут совпадать
+data Foo1 = Foo1 (Bool, Maybe Int)
+data Foo2 = FalseNoInt
+          | FalseWithInt Int
+          | TrueNoInt
+          | TrueWithInt Int
+\end{minted}
+		\item Enum'ы (перечисления) "--- это типы-суммы, в которых каждое слагаемое имеет ровно одно значение:
+\begin{minted}{haskell}
+data BinOp = Add | Sub | Mul | Div
+\end{minted}
+	\end{itemize}
+\end{frame}
