@@ -50,6 +50,7 @@ data GetResult Char = NotFound | Found Char
 	\begin{itemize}
 		\item Напишите тип для функции \t{getItem}, если бы она использовала \t{Maybe}:
 \begin{minted}{haskell}
+-- Уже объявлен в языке, писать не надо.
 data Maybe a = Nothing | Just a
 
 getItem :: [a] -> Int -> ???
@@ -69,6 +70,7 @@ getItem _ _              = Nothing
 \begin{frame}[fragile]{Either}
 	На случай, если хотим сообщить об ошибке:
 \begin{minted}{haskell}
+-- Уже объявлен в языке, писать не надо.
 data Either a b = Left a | Right b
 
 parseBool :: String -> Either String Bool
@@ -84,9 +86,9 @@ parseBool x       = Left ("Invalid value: " ++ x)
 
 \begin{frame}[fragile]{Двоичная куча}
 \begin{minted}{haskell}
-data Heap = Nil | Node Int Heap Heap
+data Heap = Nil | Node Int Heap Heap deriving Show
 
-Heap 1 (Node 2 (Node 5 (Node 6 Nil Nil) Nil)
+Node 1 (Node 2 (Node 5 (Node 6 Nil Nil) Nil)
                (Node 4 Nil Nil))
        (Node 3 Nil Nil)
 \end{minted}
@@ -111,7 +113,7 @@ Heap 1 (Node 2 (Node 5 (Node 6 Nil Nil) Nil)
 data MinMaxHeap = Nil | MinNode Int MinMaxHeap 
                       | MaxNode Int MinMaxHeap 
 \end{minted}
-	Можно даже строже:
+	Можно даже строже, у нас есть взаимная рекурсия:
 \begin{minted}{haskell}
 data MinMaxHeap = Nil1 | MinNode Int MaxMinHeap MaxMinHeap
 data MaxMinHeap = Nil2 | MaxNode Int MinMaxHeap MinMaxHeap
@@ -156,7 +158,8 @@ tail' (Cons _ xs) = xs
 
 \begin{frame}[fragile]{Упражнение}
 	\begin{enumerate}
-		\item Напишите тип <<двоичное дерево>> (\t{Tree}), в котором у каждой вершины либо 0 детей, либо 2, а каждая вершина содержит значение типа \t{a}.
+		\item Напишите тип <<двоичное дерево>> (\t{Tree}), в котором у каждой вершины либо 0 детей, либо 2, а каждая вершина содержит значение типа \t{Int}.
+		\item Добавьте \t{deriving Show}.
 		\item Напишите функцию \t{tree\_sum}, которая считает сумму в данном ей дереве.
 		\item Удалите разбор какого-нибудь случая и запустите GHCI так: \t{ghci~-W~file.hs}
 		\item Убедитесь, что выпало предупреждение о неразобранном случае.

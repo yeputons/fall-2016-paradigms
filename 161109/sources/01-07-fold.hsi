@@ -1,0 +1,12 @@
+fold (Number 10)
+a = BinaryOperation Add (Number 10) (Number 15)
+a
+fold a
+b = BinaryOperation Sub (Reference "a") (Reference "b")
+b
+fold b
+c = BinaryOperation Sub (Reference "a") (Reference "a")
+c
+fold c
+fold (BinaryOperation Mul (Number 10) c)
+fold (BinaryOperation Mul (Reference "foo") c)

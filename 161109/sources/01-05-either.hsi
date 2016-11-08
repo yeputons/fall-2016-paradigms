@@ -1,0 +1,4 @@
+:t parseBool
+parseBool "true"
+parseBool "false"
+parseBool "botva"
