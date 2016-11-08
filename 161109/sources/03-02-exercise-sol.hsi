@@ -1,0 +1,14 @@
+a = Leaf 10
+b = Node [Leaf 1, Leaf 2, Leaf 3]
+b == Node (map Leaf [1..3])
+b == Node (map Leaf [1..4])
+b /= Node (map Leaf [1..4])
+
+reverse' [1,2,3]
+reverse' []
+reverse' b
+
+c = Node (map Leaf [4..8])
+d = Node [b, c]
+d
+reverse' d

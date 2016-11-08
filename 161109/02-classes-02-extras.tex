@@ -50,14 +50,14 @@ data List a = Empty | Cons a (List a)
 		\item Решение: класс \t{Ord} требует, чтобы тип также был в классе \t{Eq}:
 \begin{minted}{haskell}
 class Eq a => Ord a where
-  (<), (<=), (>=), (>)  :: a -> a -> Bool
+  (<), (<=), (>=), (>) :: a -> a -> Bool
 \end{minted}
 		\item Если где-то пишем контекст \t{Ord a}, то \t{Eq a} появляется неявно.
 		\item В частности, в реализациях по умолчанию в \t{Ord a} можно использовать \t{==} и \t{/=}.
 	\end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]{Автовывод типов}
+\begin{frame}[fragile]{Автовывод контекста}
 \begin{minted}{haskell}
 -- Ord a => a -> a -> a
 max' a b = a == b
@@ -87,21 +87,21 @@ removeByValue x ys = fmap f ys
 	\begin{enumerate}
 		\item Пусть имеется следующее дерево со значениями в листьях и произвольным числом детей:
 \begin{minted}{haskell}
-data Tree a = Leaf a | Node [a] deriving Show
+data Tree a = Leaf a | Node [Tree a] deriving Show
 \end{minted}
 		\item Добавьте Tree в класс \t{Eq}. Подсказка: списки там уже есть.
 		\item Пусть есть такой класс для структур, в которых можно развернуть порядок элементов:
 \begin{minted}{haskell}
 class Reversible f where
-   reverse :: f a -> f a
+   reverse' :: f a -> f a
 \end{minted}
 		\item Добавьте списки в этот класс:
 \begin{minted}{haskell}
-class Reversible [] where
+instance Reversible [] where
 \end{minted}
 		\item Добавьте дерево в этот класс:
 \begin{minted}{haskell}
-class Reversible Tree where
+instance Reversible Tree where
 \end{minted}
 	\end{enumerate}
 \end{frame}
