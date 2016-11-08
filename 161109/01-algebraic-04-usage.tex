@@ -119,10 +119,10 @@ data Args = Args (CommonArgs, OperationArgs)
 \begin{onlyenv}<1>
 	Можно закодировать так\footnote{True story: раздел <<Thinking in Sum Types>> по \href{https://chadaustin.me/2015/07/sum-types/}{ссылке}}:
 \begin{minted}{haskell}
-data URL = URL (Maybe (Maybe (Maybe String, String))) String deriving Show
+data URL = URL (Maybe (Maybe (Maybe String, String))) String
 URL Nothing        "../images/facepalm.jpg"
 URL (Just Nothing) "sewiki/index.php"
-URL (Just (Just (Nothing   , "google.com"      ))) "humans.txt"
+URL (Just (Just (Nothing   , "google.com"))) "humans.txt"
 URL (Just (Just (Just "ftp", "mirror.yandex.ru"))) ""
 \end{minted}
 Ужасно, не правда ли?
