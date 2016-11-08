@@ -1,0 +1,195 @@
+\section{Классы типов}
+\subsection{Что и зачем}
+
+\begin{frame}
+	\tableofcontents[currentsection,currentsubsection]
+\end{frame}
+
+\begin{frame}[fragile]{Pattern Matching и \t{==}}
+\begin{minted}{haskell}
+data IntList = Empty | Cons Int IntList deriving Show
+a = Cons 1 (Cons 2 Empty)
+b = Cons 1 (Cons 2 Empty)
+c = Cons 1 (Cons 3 Empty)
+
+isA :: IntList -> Bool
+isA (Cons 1 (Cons 2 Empty)) = True
+isA _                       = False
+
+isA a -- True
+isA b -- True
+isA c -- False
+a == b  -- ошибка компиляции?
+a == c  -- ошибка компиляции?
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{Eq}
+	\begin{itemize}
+		\item Pattern Matching "--- конструкция на уровне языка.
+		\item \t{==} "--- просто некоторая функция с таким названием.
+		\item В C++ мы бы написали перегрузку функции. Подход Haskell:
+\begin{minted}{haskell}
+instance Eq IntList where
+  Empty       == Empty       = True
+  (Cons x xs) == (Cons y ys) = (x == y) && (xs == ys)
+  _ == _                     = False
+
+a == b  -- True
+a == c  -- False
+b == c  -- False
+Empty == Empty           -- True
+Empty /= (Cons 1 Empty)  -- True, /= тоже работает
+\end{minted}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{class Eq}
+	\begin{itemize}
+		\item \t{Eq} "--- это \textit{класс типов}, который описывает, что к типам можно применять определённые функции:
+\begin{minted}{haskell}
+class Eq a where
+  (==) :: a -> a -> Bool
+  (/=) :: a -> a -> Bool
+\end{minted}
+		\item Говорим, что тип \t{a} лежит в классе \t{Eq} тогда и только тогда, когда для него есть функции \t{(==)} и \t{(/=)}
+		\item Класс типов "--- это такой <<интерфейс>> для типов.
+		\item Некоторые функции требуют, чтобы параметры были в определённых классах:
+\begin{minted}{haskell}
+lookup :: Eq a => a -> [(a, b)] -> Maybe b
+\end{minted}
+		\item Слово \t{instance} на предыдущем слайде добавляло \t{IntList} в класс \t{Eq}.
+		\item Не путать с классами объектов из ООП!
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Реализации по умолчанию}
+	\begin{itemize}
+		\item Для \t{IntList} мы реализовали только \t{==}, а \t{/=} получили автоматом.
+		\item В классе можно указывать реализацию по умолчанию:
+\begin{minted}{haskell}
+class Eq a where
+  (==) :: a -> a -> Bool
+  (==) a b = not (a /= b)
+  (/=) :: a -> a -> Bool
+  (/=) a b = not (a == b)
+\end{minted}
+		\item Тогда \textit{минимальное полное определение} для \t{Eq} "--- это либо \t{==}, либо \t{/=}.
+	\end{itemize}
+\end{frame}
+
+\subsection{Для параметризованных типов}
+\begin{frame}[fragile]{Класс Eq для списков}
+	\begin{itemize}
+		\item Пусть есть \t{data List a = Empty | Cons a (List a)}
+		\item Разумно считать, что списки равны, если равны элементы:
+\begin{minted}{haskell}
+instance Eq (List a) where
+  Empty       == Empty       = True
+  (Cons x xs) == (Cons y ys) = (x == y) && (xs == ys)
+  _ == _                     = False
+\end{minted}
+		\item Не скомпилируется, потому что элементы произвольного типа \t{a} нельзя сранивать.
+		\item Надо добавить \textit{контекст} "--- сказать, что списки можно сравнивать только если можно сранивать элементы:
+\begin{minted}{haskell}
+instance Eq a => Eq (List a) where
+\end{minted}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Классы для структур данных}
+	\begin{itemize}
+		\item Иногда хочется указать, что структура данных обладает некоторым свойством:
+\begin{minted}{haskell}
+class Mappable f where
+  map' :: (a -> b) -> f a -> f b
+\end{minted}
+		\item \t{Mappable} "--- что-то, содержащее элементы произвольного типа, к чему можно делать \t{map'}.
+		\item Можно реализовать:
+\begin{minted}{haskell}
+instance Mappable List where
+  map' _ Empty = Empty
+  map f (Cons x xs) = Cons (f x) (map f xs)
+\end{minted}
+		\item В Haskell зовётся \t{Functor} и используется функция \t{fmap}.
+	\end{itemize}
+\end{frame}
+
+\subsection{Прочие плюшки}
+\begin{frame}[fragile]{Свои классы типов}
+	Можно создать свой собственный класс и реализовать его для любых типов:
+\begin{minted}{haskell}
+class HasSize a where
+  size :: a -> Int
+
+instance HasSize [a] where
+  size xs = length xs
+
+data Tree a = Nil | Node a (Tree a) (Tree a)
+instance HasSize (Tree a) where
+  size Nil = 0
+  size (Node _ l r) = size l + size r
+\end{minted}
+	В Java/C++ такое можно сделать только внешними перегруженными функциями.
+\end{frame}
+
+\begin{frame}[fragile]{Стандартные классы}
+	\begin{itemize}
+		\item \t{Show} "--- то, что можно вывести на экран.
+		\item \t{Eq} "--- операторы \t{==} и \t{/=}.
+		\item \t{Ord} "--- операторы \t{<}, \t{<=} и прочие.
+		\item \t{Functor} "--- структура данных, на которой есть \t{map}.
+		\item \t{Foldable} "--- структура данных, на которой есть \t{foldr} (по сути, умеет разворачиваться в список).
+		\item Для первых трёх Haskell умеет сам генерировать адекватные реализации, если попросить:
+\begin{minted}{haskell}
+data List a = Empty | Cons a (List a)
+            deriving (Show, Eq, Ord)
+\end{minted}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Зависимости классов}
+	\begin{itemize}
+		\item Как определить \t{Ord}? Хотим, чтобы тип класса \t{Ord} автоматически подходил везде, где нужен лишь \t{Eq}.
+		\item Можно скопировать \t{==} и \t{/=} в \t{Ord}, но тогда:
+			\begin{enumerate}
+				\item Можно случайно реализовать и \t{Ord}, и \t{Eq}, причём по-разному.
+				\item Получаем <<утиную типизацию>>: один класс вкладывается в другой, если есть функции с такими же названиями.
+				\item Это нехорошо: придётся следить, что названия функций вообще нигде не пересекаются.
+			\end{enumerate}
+		\item Можно сказать, что \t{Ord} определяет только новые операторы, но тогда мы можем определить тип с \t{<}, но без \t{==}, что странно.
+		\item Решение: класс \t{Ord} требует, чтобы тип также был в классе \t{Eq}:
+\begin{minted}{haskell}
+class Eq a => Ord a where
+  (<), (<=), (>=), (>)  :: a -> a -> Bool
+\end{minted}
+		\item Если где-то пишем контекст \t{Ord a}, то \t{Eq a} появляется неявно.
+		\item В частности, в реализациях по умолчанию в \t{Ord a} можно использовать \t{==} и \t{/=}.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Автовывод типов}
+\begin{minted}{haskell}
+-- Ord a => a -> a -> a
+max' a b = a == b
+
+-- (Functor f, Eq a) => a -> f a -> f (Maybe a)
+removeByValue x ys = fmap f ys
+  where
+    f y | x == y    = Nothing
+        | otherwise = Just y
+\end{minted}
+	Если в файле не видно разных функций с одинаковым названием из разных классов, то компилятор может автоматически вывести ограничения на типы (контекст).
+\end{frame}
+
+\begin{frame}[fragile]{Резюме}
+	\begin{itemize}
+		\item Альтернатива классам типов "--- интерфейсы из ООП или перегрузки функций.
+		\item Перегрузки функций не отражают связи между разными функциями (вроде \t{==} и \t{/=}).
+		\item Интерфейсы из ООП \textit{обычно} надо определять в момент создания каждого типа (не добавить интерфейс к уже существующему).
+		\item Интерфейсы из ООП \textit{обычно} не позволяют делать реализации по умолчанию "--- надо писать руками.
+		\item Классы типов всё это позволяют.
+		\item Компилятор умеет автоматически выводить нужный контекст.
+		\item В Haskell типы классов используется везде, где есть хотя бы доля обобщаемости.
+	\end{itemize}
+\end{frame}
