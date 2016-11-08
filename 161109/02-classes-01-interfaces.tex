@@ -194,3 +194,26 @@ removeByValue x ys = fmap f ys
 		\item В Haskell типы классов используется везде, где есть хотя бы доля обобщаемости.
 	\end{itemize}
 \end{frame}
+
+\begin{frame}[fragile]{Упражнение}
+	\begin{enumerate}
+		\item Пусть имеется следующее дерево со значениями в листьях и произвольным числом детей:
+\begin{minted}{haskell}
+data Tree a = Leaf a | Node [a] deriving Show
+\end{minted}
+		\item Добавьте Tree в класс \t{Eq}. Подсказка: списки там уже есть.
+		\item Пусть есть такой класс для структур, в которых можно развернуть порядок элементов:
+\begin{minted}{haskell}
+class Reversible f where
+   reverse :: f a -> f a
+\end{minted}
+		\item Добавьте списки в этот класс:
+\begin{minted}{haskell}
+class Reversible [] where
+\end{minted}
+		\item Добавьте дерево в этот класс:
+\begin{minted}{haskell}
+class Reversible Tree where
+\end{minted}
+	\end{enumerate}
+\end{frame}
