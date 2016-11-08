@@ -15,10 +15,10 @@
 Попытка 1:
 \begin{minted}{haskell}
 data Operation = Compress | Decompress deriving Show
-data Args = Args { inp :: String
-                 , out :: String
-                 , op  :: Operation
-                 } deriving Show
+data Args = Args { inp :: String,
+                   out :: String,
+                   op  :: Operation }
+                 deriving Show
 \end{minted}
 Замечание: тут у нас тип-сумма с одним-конструктором, простых типов-произведений в Haskell нет.
 \end{onlyenv}
@@ -28,11 +28,11 @@ data Args = Args { inp :: String
 Попытка 2:
 \begin{minted}{haskell}
 data Operation = Compress | Decompress deriving Show
-data Args = Args { inp :: String
-                 , out :: String
-                 , op  :: Operation
-                 , pwd :: Maybe String
-                 } deriving Show
+data Args = Args { inp :: String,
+                   out :: String,
+                   op  :: Operation,
+                   pwd :: Maybe String }
+                 deriving Show
 \end{minted}
 \end{onlyenv}
 \only<4>{Новые параметры: уровень логирования (0-3), флаг <<не перезаписывать файл при создании>>}
@@ -41,13 +41,13 @@ data Args = Args { inp :: String
 Попытка 3:
 \begin{minted}{haskell}
 data Operation = Compress | Decompress deriving Show
-data Args = Args { inp :: String
-                 , out :: String
-                 , op  :: Operation
-                 , pwd :: Maybe String
-                 , logLevel  :: Int
-                 , overwrite :: Bool
-                 } deriving Show
+data Args = Args { inp :: String,
+                   out :: String,
+                   op  :: Operation,
+                   pwd :: Maybe String,
+                   logLevel  :: Int,
+                   overwrite :: Bool }
+                 deriving Show
 \end{minted}
 \end{onlyenv}
 \only<6-7>{
@@ -64,13 +64,13 @@ data Args = Args { inp :: String
 Попытка 4:
 \begin{minted}{haskell}
 -- data Operation = Compress | Decompress deriving Show
-data Args = Args { inp  :: String
-                 , out :: String
-                 , comprArgs :: Maybe (Format, Int)
-                 , pwd :: Maybe String
-                 , logLevel  :: Int
-                 , overwrite :: Bool
-                 } deriving Show
+data Args = Args { inp  :: String,
+                   out :: String,
+                   comprArgs :: Maybe (Format, Int),
+                   pwd :: Maybe String,
+                   logLevel  :: Int,
+                   overwrite :: Bool }
+                 deriving Show
 \end{minted}
 \end{onlyenv}
 \only<9>{
