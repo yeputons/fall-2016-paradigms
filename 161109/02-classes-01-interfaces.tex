@@ -28,12 +28,13 @@ a == c  -- ошибка компиляции?
 	\begin{itemize}
 		\item Pattern Matching "--- конструкция на уровне языка.
 		\item \t{==} "--- просто некоторая функция с таким названием.
-		\item В C++ мы бы написали перегрузку функции. Подход Haskell:
+		\item В C++ мы бы написали перегрузку функции/оператора.
+		\item В Haskell пишем так:
 \begin{minted}{haskell}
 instance Eq IntList where
   Empty       == Empty       = True
   (Cons x xs) == (Cons y ys) = (x == y) && (xs == ys)
-  _ == _                     = False
+  _           == _           = False
 
 a == b  -- True
 a == c  -- False
