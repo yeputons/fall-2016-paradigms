@@ -1,0 +1,201 @@
+\subsection{Использование типов-сумм}
+\begin{frame}
+	\tableofcontents[currentsection,currentsubsection]
+\end{frame}
+
+\begin{frame}[t,fragile]{Архиватор}
+\only<1-2>{
+	\begin{itemize}
+		\item Мы пишем консольный архиватор для одного файла (вроде gzip).
+		\item Хотим написать тип, который хранит параметры командной строки: входной файл, выходной файл, сжатие/расжатие.
+	\end{itemize}
+}
+
+\begin{onlyenv}<1-2>
+Попытка 1:
+\begin{minted}{haskell}
+data Operation = Compress | Decompress deriving Show
+data Args = { in  :: String
+            , out :: String
+            , op  :: Operation
+            } deriving Show
+\end{minted}
+\end{onlyenv}
+\only<2>{А теперь хотим добавить пароль для запаковки/распаковки (нужен не всегда)}
+
+\begin{onlyenv}<3-4>
+Попытка 2:
+\begin{minted}{haskell}
+data Operation = Compress | Decompress deriving Show
+data Args = { in  :: String
+            , out :: String
+            , op  :: Operation
+            , pwd :: Maybe String
+            } deriving Show
+\end{minted}
+\end{onlyenv}
+\only<4>{Новые параметры: уровень логирования (0-3), флаг <<не перезаписывать файл при создании>>}
+
+\begin{onlyenv}<5-7>
+Попытка 3:
+\begin{minted}{haskell}
+data Operation = Compress | Decompress deriving Show
+data Args = { in  :: String
+            , out :: String
+            , op  :: Operation
+            , pwd :: Maybe String
+            , logLevel  :: Int
+            , overwrite :: Bool
+            } deriving Show
+\end{minted}
+\end{onlyenv}
+\only<6-7>{
+\begin{itemize}
+	\item Новые параметры: формат архива, степень сжатия.
+	\only<7>{
+	\item Если просто добавить поле \t{Maybe (Format, Int)}, то появится инвариант и структура может стать некорректной.
+	\item Можно убрать \t{op} и заменить его на новый \t{Maybe}.
+	}
+\end{itemize}
+}
+
+\begin{onlyenv}<8-9>
+Попытка 4:
+\begin{minted}{haskell}
+-- data Operation = Compress | Decompress deriving Show
+data Args = { in  :: String
+            , out :: String
+            , comprArgs :: Maybe (Format, Int)
+            , pwd :: Maybe String
+            , logLevel  :: Int
+            , overwrite :: Bool
+            } deriving Show
+\end{minted}
+\end{onlyenv}
+\only<9>{
+\begin{itemize}
+	\item А если теперь добавим третью операцию, то всё сломается.
+	\item А если она при этом будет только читать архив (но никуда не писать), всё сломается ещё раз.
+	\item При взгляде на структуру неочевидно, как узнать, сжимаем или разжимаем, хотя вся информация в ней есть.
+\end{itemize}
+}
+
+\begin{onlyenv}<10>
+Намного лучше разделить параметры на совсем общие и относящиеся к операции.
+
+Попытка 5, финальная:
+\begin{minted}{haskell}
+data CommonArgs = Common { logLevel  :: Int }
+data OperationArgs = -- Заодно имена лучше отражают суть.
+    Compress   { input     :: String, archive :: String,
+                 pwd       :: Maybe String,
+                 overwrite :: Bool,
+                 format    :: Format, level :: Int }
+  | Decompress { archive   :: String, output :: String,
+                 pwd       :: Maybe String,
+                 overwrite :: Bool }
+data Args = Args (CommonArgs, OperationArgs)
+\end{minted}
+Мораль: лучше думать в терминах <<какие по смыслу бывают ситуации>>, чем
+<<как хранить всё одновременно>>
+\end{onlyenv}
+\end{frame}
+
+\begin{frame}[t,fragile]{Хранение URL}
+	URL-адреса бывают:
+	\begin{itemize}
+		\item Относительные: \t{../images/facepalm.jpg}.
+		\item Абсолютные, бывают:
+			\begin{itemize}
+				\item На том же домене: \t{sewiki/index.php}.
+				\item На другом домене, причём:
+					\begin{itemize}
+						\item Та же схема (протокол): \t{google.com/humans.txt}
+	                    \item Другая схема: \t{ftp://mirror.yandex.ru/}
+                   	\end{itemize}
+			\end{itemize}
+	\end{itemize}
+\begin{onlyenv}<1>
+	Можно закодировать так\footnote{True story: раздел <<Thinking in Sum Types>> по \href{https://chadaustin.me/2015/07/sum-types/}{ссылке}}:
+\begin{minted}{haskell}
+data URL = URL (Maybe (Maybe (Maybe String, String)), String)
+(Nothing     , "../images/facepalm.jpg")
+(Just Nothing, "sewiki/index.php")
+(Just (Just (Nothing   , "google.com"      )), "humans.txt")
+(Just (Just (Just "ftp", "mirror.yandex.ru")), "")
+\end{minted}
+Ужасно, не правда ли?
+\end{onlyenv}
+
+\begin{onlyenv}<2>
+А можно так:
+\begin{minted}{haskell}
+data URL = Relative String
+         | Absolute String
+         | OtherDomain { domain :: String, path :: String }
+         | FullUrl     { schema :: string,
+                         domain :: String, path :: String }
+\end{minted}
+Мораль: иногда может помочь <<раскрыть по дистрибутивности>>.
+\end{onlyenv}
+\end{frame}
+
+\begin{frame}[t,fragile]{Физика}
+\begin{minted}{haskell}
+data Time = Sec Double
+          | Msec Double
+          | Usec Double
+          | Min Double
+get_days (Sec x) = x / (24 * 60 * 60)
+get_days y = get_days (to_sec y)
+
+get_days' x = x_sec / (24 * 60 * 60)
+  where (Sec x_sec) = to_sec x -- pattern matching
+\end{minted}
+\begin{onlyenv}<1>
+\begin{minted}{haskell}
+to_sec (Sec x) = Sec x
+to_sec (Msec x) = Sec (x / 1000)
+to_sec (Usec x) = Sec (x / 1000000)
+to_sec (Min x) = Sec (x * 60)
+\end{minted}
+\end{onlyenv}
+\only<2>{
+	\begin{itemize}
+		\item Компилятор обяжет вас указать единицы измерения во всех местах.
+		\item Все проверки будут сделаны во время компиляции.
+		\item Можно работать в удобных единицах и автоматически конвертировать из остальных.
+	\end{itemize}
+}
+\end{frame}
+
+\begin{frame}[fragile]{Резюме-1}
+	\begin{itemize}
+		\item Типы-суммы очень естественны, если про них думать.
+		\item Полезны, когда возможные значения типа разбиваются на фиксированное число групп, которые сильно отличаются.
+		\item Если число групп неизвестно "--- поможет ООП, наследование и Visitor.
+		\item Если группы одинаковы "--- возможно, имеет смысл сделать тип-сумму внутри, а не снаружи:
+\begin{minted}{haskell}
+data BinaryOperation = Sum Tree Tree | Mul Tree Tree
+-- против
+data BinOp = Sum | Mul | Sub
+data BinaryOperation = BinaryOperation BinOp Tree Tree
+\end{minted}
+		\item В императивных языках типов-сумм обычно нет, используем наследование и Visitor.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Резюме-2}
+	\begin{itemize}
+		\item
+			Типы-суммы позволяют выражать многие инварианты данных (<<флаг степени сжатия есть только при сжатии файла>>) на уровне типа.
+		\item
+			Компилятор может проверять сохранение этих инвариантов.
+		\item
+			Компилятор может проверить то, что все случаи везде разобраны.
+		\item
+			При поддержке типов-сумм на уровне языка код получается намного короче и чище, чем через ООП.
+		\item
+			Pattern matching + алгебраические типы = мощь.
+	\end{itemize}
+\end{frame}
