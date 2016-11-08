@@ -1,0 +1,107 @@
+\subsection{Прочие плюшки}
+\begin{frame}[fragile]{Свои классы типов}
+	Можно создать свой собственный класс:
+\begin{minted}{haskell}
+class HasSize a where
+  size :: a -> Int
+
+instance HasSize [a] where
+  size xs = length xs
+
+data Tree a = Nil | Node a (Tree a) (Tree a)
+instance HasSize (Tree a) where
+  size Nil = 0
+  size (Node _ l r) = size l + size r
+\end{minted}
+	\begin{itemize}
+		\item
+			Можно определить даже для старых типов.
+			В Java/C++ такое можно сделать только внешними перегруженными функциями.
+		\item Новые функции можно использовать где угодно с любыми типами.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Стандартные классы}
+	\begin{itemize}
+		\item \t{Show} "--- то, что можно вывести на экран.
+		\item \t{Eq} "--- операторы \t{==} и \t{/=}.
+		\item \t{Ord} "--- операторы \t{<}, \t{<=} и прочие.
+		\item \t{Functor} "--- структура данных, на которой есть \t{map}.
+		\item \t{Foldable} "--- структура данных, на которой есть \t{foldr} (по сути, умеет разворачиваться в список).
+		\item Для первых трёх Haskell умеет сам генерировать адекватные реализации, если попросить:
+\begin{minted}{haskell}
+data List a = Empty | Cons a (List a)
+            deriving (Show, Eq, Ord)
+\end{minted}
+		\item Порядок <<лексикографический>> (более ранний конструктор меньше).
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Зависимости классов}
+	\begin{itemize}
+		\item Как определить \t{Ord}? Хотим, чтобы тип класса \t{Ord} автоматически подходил везде, где нужен лишь \t{Eq}.
+		\item Можно скопировать \t{==} и \t{/=} в \t{Ord}, но тогда:
+			\begin{enumerate}
+				\item Можно случайно реализовать и \t{Ord}, и \t{Eq}, причём по-разному.
+				\item Получаем <<утиную типизацию>>: один класс вкладывается в другой, если есть функции с такими же названиями.
+				\item Это нехорошо: придётся следить, что названия функций вообще нигде не пересекаются.
+			\end{enumerate}
+		\item Можно сказать, что \t{Ord} определяет только новые операторы, но тогда мы можем определить тип с \t{<}, но без \t{==}, что странно.
+		\item Решение: класс \t{Ord} требует, чтобы тип также был в классе \t{Eq}:
+\begin{minted}{haskell}
+class Eq a => Ord a where
+  (<), (<=), (>=), (>)  :: a -> a -> Bool
+\end{minted}
+		\item Если где-то пишем контекст \t{Ord a}, то \t{Eq a} появляется неявно.
+		\item В частности, в реализациях по умолчанию в \t{Ord a} можно использовать \t{==} и \t{/=}.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Автовывод типов}
+\begin{minted}{haskell}
+-- Ord a => a -> a -> a
+max' a b = a == b
+
+-- (Functor f, Eq a) => a -> f a -> f (Maybe a)
+removeByValue x ys = fmap f ys
+  where
+    f y | x == y    = Nothing
+        | otherwise = Just y
+\end{minted}
+	Если в файле не видно разных функций с одинаковым названием из разных классов, то компилятор может автоматически вывести ограничения на типы (контекст).
+\end{frame}
+
+\begin{frame}[fragile]{Резюме}
+	\begin{itemize}
+		\item Альтернатива классам типов "--- интерфейсы из ООП или перегрузки функций.
+		\item Перегрузки функций не отражают связи между разными функциями (вроде \t{==} и \t{/=}).
+		\item Интерфейсы из ООП \textit{обычно} надо определять в момент создания каждого типа (не добавить интерфейс к уже существующему).
+		\item Интерфейсы из ООП \textit{обычно} не позволяют делать реализации по умолчанию "--- надо писать руками.
+		\item Классы типов всё это позволяют.
+		\item Компилятор умеет автоматически выводить нужный контекст.
+		\item В Haskell типы классов используется везде, где есть хотя бы доля обобщаемости.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Упражнение}
+	\begin{enumerate}
+		\item Пусть имеется следующее дерево со значениями в листьях и произвольным числом детей:
+\begin{minted}{haskell}
+data Tree a = Leaf a | Node [a] deriving Show
+\end{minted}
+		\item Добавьте Tree в класс \t{Eq}. Подсказка: списки там уже есть.
+		\item Пусть есть такой класс для структур, в которых можно развернуть порядок элементов:
+\begin{minted}{haskell}
+class Reversible f where
+   reverse :: f a -> f a
+\end{minted}
+		\item Добавьте списки в этот класс:
+\begin{minted}{haskell}
+class Reversible [] where
+\end{minted}
+		\item Добавьте дерево в этот класс:
+\begin{minted}{haskell}
+class Reversible Tree where
+\end{minted}
+	\end{enumerate}
+\end{frame}
