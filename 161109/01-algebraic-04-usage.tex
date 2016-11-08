@@ -15,11 +15,12 @@
 Попытка 1:
 \begin{minted}{haskell}
 data Operation = Compress | Decompress deriving Show
-data Args = { in  :: String
-            , out :: String
-            , op  :: Operation
-            } deriving Show
+data Args = Args { inp :: String
+                 , out :: String
+                 , op  :: Operation
+                 } deriving Show
 \end{minted}
+Замечание: тут у нас тип-сумма с одним-конструктором, простых типов-произведений в Haskell нет.
 \end{onlyenv}
 \only<2>{А теперь хотим добавить пароль для запаковки/распаковки (нужен не всегда)}
 
@@ -27,11 +28,11 @@ data Args = { in  :: String
 Попытка 2:
 \begin{minted}{haskell}
 data Operation = Compress | Decompress deriving Show
-data Args = { in  :: String
-            , out :: String
-            , op  :: Operation
-            , pwd :: Maybe String
-            } deriving Show
+data Args = Args { inp :: String
+                 , out :: String
+                 , op  :: Operation
+                 , pwd :: Maybe String
+                 } deriving Show
 \end{minted}
 \end{onlyenv}
 \only<4>{Новые параметры: уровень логирования (0-3), флаг <<не перезаписывать файл при создании>>}
@@ -40,13 +41,13 @@ data Args = { in  :: String
 Попытка 3:
 \begin{minted}{haskell}
 data Operation = Compress | Decompress deriving Show
-data Args = { in  :: String
-            , out :: String
-            , op  :: Operation
-            , pwd :: Maybe String
-            , logLevel  :: Int
-            , overwrite :: Bool
-            } deriving Show
+data Args = Args { inp :: String
+                 , out :: String
+                 , op  :: Operation
+                 , pwd :: Maybe String
+                 , logLevel  :: Int
+                 , overwrite :: Bool
+                 } deriving Show
 \end{minted}
 \end{onlyenv}
 \only<6-7>{
@@ -63,13 +64,13 @@ data Args = { in  :: String
 Попытка 4:
 \begin{minted}{haskell}
 -- data Operation = Compress | Decompress deriving Show
-data Args = { in  :: String
-            , out :: String
-            , comprArgs :: Maybe (Format, Int)
-            , pwd :: Maybe String
-            , logLevel  :: Int
-            , overwrite :: Bool
-            } deriving Show
+data Args = Args { inp  :: String
+                 , out :: String
+                 , comprArgs :: Maybe (Format, Int)
+                 , pwd :: Maybe String
+                 , logLevel  :: Int
+                 , overwrite :: Bool
+                 } deriving Show
 \end{minted}
 \end{onlyenv}
 \only<9>{
@@ -118,11 +119,11 @@ data Args = Args (CommonArgs, OperationArgs)
 \begin{onlyenv}<1>
 	Можно закодировать так\footnote{True story: раздел <<Thinking in Sum Types>> по \href{https://chadaustin.me/2015/07/sum-types/}{ссылке}}:
 \begin{minted}{haskell}
-data URL = URL (Maybe (Maybe (Maybe String, String)), String)
-(Nothing     , "../images/facepalm.jpg")
-(Just Nothing, "sewiki/index.php")
-(Just (Just (Nothing   , "google.com"      )), "humans.txt")
-(Just (Just (Just "ftp", "mirror.yandex.ru")), "")
+data URL = URL (Maybe (Maybe (Maybe String, String))) String deriving Show
+URL Nothing        "../images/facepalm.jpg"
+URL (Just Nothing) "sewiki/index.php"
+URL (Just (Just (Nothing   , "google.com"      ))) "humans.txt"
+URL (Just (Just (Just "ftp", "mirror.yandex.ru"))) ""
 \end{minted}
 Ужасно, не правда ли?
 \end{onlyenv}
@@ -133,7 +134,7 @@ data URL = URL (Maybe (Maybe (Maybe String, String)), String)
 data URL = Relative String
          | Absolute String
          | OtherDomain { domain :: String, path :: String }
-         | FullUrl     { schema :: string,
+         | FullUrl     { schema :: String,
                          domain :: String, path :: String }
 \end{minted}
 Мораль: иногда может помочь <<раскрыть по дистрибутивности>>.
@@ -142,31 +143,31 @@ data URL = Relative String
 
 \begin{frame}[t,fragile]{Физика}
 \begin{minted}{haskell}
-data Time = Sec Double
-          | Msec Double
-          | Usec Double
-          | Min Double
-get_days (Sec x) = x / (24 * 60 * 60)
-get_days y = get_days (to_sec y)
+data Time = Sec  Double | Min  Double
+          | Msec Double | Usec Double
+          deriving Show
+diff (Sec x) (Sec y) = Sec (x - y)
+diff x y = diff (to_sec x) (to_sec y)
 
-get_days' x = x_sec / (24 * 60 * 60)
-  where (Sec x_sec) = to_sec x -- pattern matching
+diff' x y = Sec (x' - y')
+  where (Sec x') = to_sec x -- pattern matching
+        (Sec y') = to_sec y
 \end{minted}
-\begin{onlyenv}<1>
+	\begin{onlyenv}<1>
 \begin{minted}{haskell}
 to_sec (Sec x) = Sec x
 to_sec (Msec x) = Sec (x / 1000)
 to_sec (Usec x) = Sec (x / 1000000)
 to_sec (Min x) = Sec (x * 60)
 \end{minted}
-\end{onlyenv}
-\only<2>{
+	\end{onlyenv}
+	\only<2>{
 	\begin{itemize}
 		\item Компилятор обяжет вас указать единицы измерения во всех местах.
 		\item Все проверки будут сделаны во время компиляции.
 		\item Можно работать в удобных единицах и автоматически конвертировать из остальных.
 	\end{itemize}
-}
+	}
 \end{frame}
 
 \begin{frame}[fragile]{Резюме-1}
@@ -176,10 +177,10 @@ to_sec (Min x) = Sec (x * 60)
 		\item Если число групп неизвестно "--- поможет ООП, наследование и Visitor.
 		\item Если группы одинаковы "--- возможно, имеет смысл сделать тип-сумму внутри, а не снаружи:
 \begin{minted}{haskell}
-data BinaryOperation = Sum Tree Tree | Mul Tree Tree
+data Tree = Sum Tree Tree | Mul Tree Tree
 -- против
 data BinOp = Sum | Mul | Sub
-data BinaryOperation = BinaryOperation BinOp Tree Tree
+data Tree = BinaryOperation BinOp Tree Tree
 \end{minted}
 		\item В императивных языках типов-сумм обычно нет, используем наследование и Visitor.
 	\end{itemize}
