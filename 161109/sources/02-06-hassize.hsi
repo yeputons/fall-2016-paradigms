@@ -1,0 +1,5 @@
+size []       -- 0
+size [1,2,3]  -- 3
+size Nil      -- 0
+size (Node 10 (Node 10 Nil Nil) Nil) -- 2
+map size [Nil, Node 10 Nil Nil] -- [0, 1]

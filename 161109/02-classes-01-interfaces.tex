@@ -82,7 +82,10 @@ class Eq a where
 \subsection{Для параметризованных типов}
 \begin{frame}[fragile]{Класс Eq для списков}
 	\begin{itemize}
-		\item Пусть есть \t{data List a = Empty | Cons a (List a)}
+		\item Пусть есть свой класс для списков:
+\begin{minted}{haskell}
+data List a = Empty | Cons a (List a)
+\end{minted}
 		\item Разумно считать, что списки равны, если равны элементы:
 \begin{minted}{haskell}
 instance Eq (List a) where
@@ -110,15 +113,37 @@ class Mappable f where
 \begin{minted}{haskell}
 instance Mappable List where
   map' _ Empty = Empty
-  map f (Cons x xs) = Cons (f x) (map f xs)
+  map' f (Cons x xs) = Cons (f x) (map' f xs)
+
+map' (+1) (Cons 1 (Cons 10 Empty))
+-- Cons 2 (Cons 11 Empty)
 \end{minted}
-		\item В Haskell зовётся \t{Functor} и используется функция \t{fmap}.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Functor}
+	\begin{itemize}
+		\item Аналог \t{Mappable} в Haskell называется \t{Functor}, в нём определена функция \t{fmap}.
+		\item \t{fmap} должна удовлетворять некоторым аксиомам, но их компилятор сам не проверит:
+\begin{minted}{haskell}
+fmap id x == x
+fmap (f . g) x == fmap f (fmap g x)
+\end{minted}
+		\item После реализации \t{Functor} наш новый тип можно использовать в том числе в старых функциях:
+\begin{minted}{haskell}
+a = (Cons 1 (Cons 2 (Cons 3 Empty)))
+fmap (+1) [1,2,3]
+fmap (+1) a
+-- Встроенный оператор замены значений на константу
+10 <$ [1,2,3]  -- [10,10,10]
+10 <$ a
+\end{minted}
 	\end{itemize}
 \end{frame}
 
 \subsection{Прочие плюшки}
 \begin{frame}[fragile]{Свои классы типов}
-	Можно создать свой собственный класс и реализовать его для любых типов:
+	Можно создать свой собственный класс:
 \begin{minted}{haskell}
 class HasSize a where
   size :: a -> Int
@@ -131,7 +156,12 @@ instance HasSize (Tree a) where
   size Nil = 0
   size (Node _ l r) = size l + size r
 \end{minted}
-	В Java/C++ такое можно сделать только внешними перегруженными функциями.
+	\begin{itemize}
+		\item
+			Можно определить даже для старых типов.
+			В Java/C++ такое можно сделать только внешними перегруженными функциями.
+		\item Новые функции можно использовать где угодно с любыми типами.
+	\end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]{Стандартные классы}
@@ -146,6 +176,7 @@ instance HasSize (Tree a) where
 data List a = Empty | Cons a (List a)
             deriving (Show, Eq, Ord)
 \end{minted}
+		\item Порядок <<лексикографический>> (более ранний конструктор меньше).
 	\end{itemize}
 \end{frame}
 
