@@ -7,6 +7,7 @@
 	Поиск элемента по номеру:
 \begin{minted}{haskell}
 data CharOrNotFound = NotFound | Found Char deriving Show
+
 getItem :: [Char] -> Int -> CharOrNotFound
 getItem (x:_ ) 0         = Found x
 getItem (x:xs) n | n > 0 = getItem xs (n - 1)
@@ -25,6 +26,7 @@ getItem _      _         = NotFound
 	Можно обобщить до \textit{параметризованного типа}:
 \begin{minted}{haskell}
 data GetResult a = NotFound | Found a deriving Show
+
 getItem :: [a] -> Int -> GetResult a
 getItem (x:_ ) 0         = Found x
 getItem (x:xs) n | n > 0 = getItem xs (n - 1)
@@ -49,6 +51,7 @@ data GetResult Char = NotFound | Found Char
 		\item Напишите тип для функции \t{getItem}, если бы она использовала \t{Maybe}:
 \begin{minted}{haskell}
 data Maybe a = Nothing | Just a
+
 getItem :: [a] -> Int -> ???
 \end{minted}
 		\item Напишите функцию \t{getItem}.
@@ -67,7 +70,7 @@ getItem _ _              = Nothing
 	На случай, если хотим сообщить об ошибке:
 \begin{minted}{haskell}
 data Either a b = Left a | Right b
-OrError x = Either String x
+
 parseBool :: String -> Either String Bool
 parseBool "true"  = Right True
 parseBool "false" = Right False
@@ -82,6 +85,7 @@ parseBool x       = Left ("Invalid value: " ++ x)
 \begin{frame}[fragile]{Двоичная куча}
 \begin{minted}{haskell}
 data Heap = Nil | Node Int Heap Heap
+
 Heap 1 (Node 2 (Node 5 (Node 6 Nil Nil) Nil)
                (Node 4 Nil Nil))
        (Node 3 Nil Nil)
@@ -137,6 +141,7 @@ fold x = x
 \begin{frame}[fragile]{Односвязные списки}
 \begin{minted}{haskell}
 data List a = Empty | Cons a (List a) deriving Show
+
 head' (Cons x _ ) = x
 tail' (Cons _ xs) = xs
 \end{minted}
@@ -153,7 +158,7 @@ tail' (Cons _ xs) = xs
 	\begin{enumerate}
 		\item Напишите тип <<двоичное дерево>> (\t{Tree}), в котором у каждой вершины либо 0 детей, либо 2, а каждая вершина содержит значение типа \t{a}.
 		\item Напишите функцию \t{tree\_sum}, которая считает сумму в данном ей дереве.
-		\item Удалите разбор какого-нибудь случая и запустите GHCI так: \t{ghci -W file.hs}
+		\item Удалите разбор какого-нибудь случая и запустите GHCI так: \t{ghci~-W~file.hs}
 		\item Убедитесь, что выпало предупреждение о неразобранном случае.
 		\item Напишите функцию, которая возвращает бесконечное дерево \t{Int}'ов, где каждая вершина содержит номер своего уровня.
 		\item Выведите результат на экран, объясните увиденное.
@@ -172,7 +177,7 @@ tail' (Cons _ xs) = xs
 				\item Предупреждения компилятора о нерассмотренных случаях (ключ \t{-W} для GHC/GHCI).
 			\end{enumerate}
 		\item Добавлять случаи в тип-сумму обычно после объявления нельзя.
-		\item В языках без типов-сумм, но с ООП обычно используется:
+		\item В языках без типов-сумм, но с ООП, обычно используется:
 			\begin{itemize}
 				\item Наследование от общего предка вместо типов-сумм.
 				\item Visitor вместо pattern mactching.
