@@ -80,10 +80,10 @@ bool need_processing(PaymentMethod *m) {
 \begin{minted}{cpp}
 bool result;
 class NeedProcessingVisitor {
-  void accept(CardPayment *p) { result = true; }
-  void accept(CashPayment *p) { result = false; }
+  void visit(CardPayment *p) { result = true; }
+  void visit(CashPayment *p) { result = false; }
 }
-bool need_processign(PaymentMethod *m) {
+bool need_processing(PaymentMethod *m) {
   m->accept(NeedProcessingVisitor());
   return result;
 }

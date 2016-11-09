@@ -110,8 +110,8 @@ Node 1 (Node 2 (Node 5 (Node 6 Nil Nil) Nil)
 	Так как вершина всегда хранит либо минимум, либо максимум, это можно указать прямо в типе.
 	Тогда точно не запутаемся, где какая вершина, и не надо это явно считать и передавать.
 \begin{minted}{haskell}
-data MinMaxHeap = Nil | MinNode Int MinMaxHeap 
-                      | MaxNode Int MinMaxHeap 
+data MinMaxHeap = Nil | MinNode Int MinMaxHeap MinMaxHeap
+                      | MaxNode Int MinMaxHeap MinMaxHeap
 \end{minted}
 	Можно даже строже, у нас есть взаимная рекурсия:
 \begin{minted}{haskell}

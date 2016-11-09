@@ -11,7 +11,7 @@ instance HasSize [a] where
 data Tree a = Nil | Node a (Tree a) (Tree a)
 instance HasSize (Tree a) where
   size Nil = 0
-  size (Node _ l r) = size l + size r
+  size (Node _ l r) = 1 + size l + size r
 \end{minted}
 	\begin{itemize}
 		\item
@@ -60,7 +60,7 @@ class Eq a => Ord a where
 \begin{frame}[fragile]{Автовывод контекста}
 \begin{minted}{haskell}
 -- Ord a => a -> a -> a
-max' a b = a == b
+max' a b = if a > b then a else b
 
 -- (Functor f, Eq a) => a -> f a -> f (Maybe a)
 removeByValue x ys = fmap f ys
@@ -79,7 +79,7 @@ removeByValue x ys = fmap f ys
 		\item Интерфейсы из ООП \textit{обычно} не позволяют делать реализации по умолчанию "--- надо писать руками.
 		\item Классы типов всё это позволяют.
 		\item Компилятор умеет автоматически выводить нужный контекст.
-		\item В Haskell типы классов используется везде, где есть хотя бы доля обобщаемости.
+		\item В Haskell классов типов используется везде, где есть хотя бы доля обобщаемости.
 	\end{itemize}
 \end{frame}
 
