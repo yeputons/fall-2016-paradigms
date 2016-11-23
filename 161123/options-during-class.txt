@@ -1,0 +1,19 @@
+SSH, "иксы", "оконный менеджер" - Linux only
+Сети: DNS, IP, TCP, UDP, DHCP, MAC, "порт"
+gist, ideone, pastebin, github, ngrok, github pages
+
+
+программирование:
+Make, CMake, Bazel, Maven, Gradle.
+pip, Maven, Gradle cabal
+
+stdin/stdout/stder, терминал, консоль, сессия, ncurses.
+
+что изучать в новом языке программирования.
+
+97 вещей, которые должен знать любой программист.
++ "Не пытайтесь повторить это дома"
+
+ключевые слова и технологии
+
++ где задавать вопросы и искать информацию.
