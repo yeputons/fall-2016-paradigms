@@ -1,4 +1,5 @@
 __pycache__
+.cache
 *.exe
 
 ## Core latex/pdflatex auxiliary files:
